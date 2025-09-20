@@ -33,10 +33,10 @@ jobs:
         run: dotnet publish -c Release -o ./publish
 
       # Step 6: Create appsettings.json dynamically using GitHub Secrets
-    - name: Create appsettings.json
-  shell: pwsh
-  run: |
-@'
+      - name: Create appsettings.json
+        shell: pwsh
+        run: |
+          @'
 {
   "ConnectionStrings": { "DefaultConnection": "${{ secrets.SQL_DEFAULT_CONNECTION }}" },
   "AzureCommunicationServices": {
@@ -67,7 +67,6 @@ jobs:
 }
 '@ | Out-File -FilePath ./publish/appsettings.json -Encoding utf8
 
-
       # Step 7: Deploy to Azure Web App
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
@@ -75,4 +74,3 @@ jobs:
           app-name: "my-mvc-app"  # replace with your Azure App Service name
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./publish
-
