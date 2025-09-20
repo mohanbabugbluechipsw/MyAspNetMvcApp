@@ -36,7 +36,7 @@ jobs:
       - name: Create appsettings.json
         shell: pwsh
         run: |
-          @'
+          $appSettings = @"
 {
   "ConnectionStrings": { "DefaultConnection": "${{ secrets.SQL_DEFAULT_CONNECTION }}" },
   "AzureCommunicationServices": {
@@ -65,14 +65,13 @@ jobs:
     "ContainerName": "${{ secrets.AZURE_BLOB_LOGIN_CONTAINER }}"
   }
 }
-'@ | Out-File -FilePath ./publish/appsettings.json -Encoding utf8
+"@
+          $appSettings | Out-File -FilePath ./publish/appsettings.json -Encoding utf8
 
       # Step 7: Deploy to Azure Web App
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: "my-mvc-app"  # replace with your App Service name
+          app-name: "my-mvc-app"
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./publish
-
-# check they error - This line is now properly commented out
