@@ -1,0 +1,199 @@
+﻿:root {
+    --primary-color: #004085;
+    --secondary-color: #007bff;
+    --hover-color: rgba(255, 255, 255, 0.15);
+    --nav-bg-gradient: linear-gradient(135deg, #007bff, #004085);
+    --transition-speed: 0.3s;
+}
+
+/* Base Navbar Styles */
+.navbar {
+    background: var(--nav-bg-gradient);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 1rem;
+    min-height: 60px;
+}
+
+.navbar-brand {
+    color: white !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .navbar-brand img {
+        height: 40px;
+        transition: transform var(--transition-speed);
+    }
+
+.brand-text h1 {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.brand-text p {
+    font-size: 0.7rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    padding: 0.75rem 1rem !important;
+    margin: 4px 0;
+    border-radius: 8px;
+    transition: all var(--transition-speed) ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .nav-link:hover,
+    .nav-link:focus {
+        background: var(--hover-color);
+        color: white !important;
+        transform: translateY(-2px);
+    }
+
+    .nav-link.active {
+        background: var(--secondary-color);
+        color: white !important;
+    }
+
+/* Dropdown Styles */
+.dropdown-menu {
+    background: #0056b3;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    margin: 0.5rem 0;
+}
+
+.dropdown-item {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all var(--transition-speed) ease;
+}
+
+    .dropdown-item:hover {
+        background: #004085;
+        color: white !important;
+    }
+
+.navbar-toggler {
+    border: none;
+    padding: 0.5rem;
+    color: white !important;
+    font-size: 1.5rem;
+}
+
+    .navbar-toggler:focus {
+        box-shadow: none;
+    }
+
+/* Mobile-specific styles */
+@media (max-width: 992px) {
+    .navbar-collapse {
+        background: var(--primary-color);
+        padding: 1rem;
+        margin-top: 0.5rem;
+        border-radius: 8px;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        width: auto;
+        z-index: 1000;
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar-nav {
+        padding: 0.5rem 0;
+    }
+
+    .nav-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        width: calc(100% - 2rem);
+        margin: 0.5rem 1rem;
+    }
+
+    .nav-link span,
+    .dropdown-toggle span {
+        display: inline !important;
+        font-size: 0.9rem;
+    }
+
+    .nav-link i {
+        min-width: 24px;
+        text-align: center;
+    }
+}
+
+/* Desktop-specific styles */
+@media (min-width: 992px) {
+    .navbar {
+        padding: 0.75rem 1rem;
+        min-height: 80px;
+    }
+
+    .navbar-brand img {
+        height: 60px;
+    }
+
+    .brand-text h1 {
+        font-size: 1.4rem;
+    }
+
+    .brand-text p {
+        font-size: 0.8rem;
+        display: block;
+    }
+
+    .nav-link {
+        margin: 0 4px;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+    }
+}
+
+/* Content spacing */
+.content-container {
+    margin-top: 5.5rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+/* Very small mobile */
+@media (max-width: 576px) {
+    .content-container {
+        margin-top: 5rem;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .navbar-brand img {
+        height: 36px;
+    }
+
+    .brand-text h1 {
+        font-size: 1rem;
+    }
+
+    .nav-link {
+        padding: 0.6rem 0.8rem !important;
+        font-size: 0.9rem;
+    }
+}

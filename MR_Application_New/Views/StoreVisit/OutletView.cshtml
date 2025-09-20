@@ -1,0 +1,99 @@
+﻿
+@{
+    ViewData["Title"] = "Outlet View";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container bg-white p-4 rounded shadow mt-4" style="max-width: 500px;">
+    <h4 class="text-center mb-4">Outlet View</h4>
+
+    <div class="mb-3">
+        <label>Select Outlet Format:</label>
+        <select id="formatSelect" class="form-select">
+            <option value="">-- Select Format --</option>
+            <option value="OTC">OTC (Over the Counter)</option>
+            <option value="SS">SS (Self Service)</option>
+            <option value="Hybrid">Hybrid (OTC + SS)</option>
+            <option value="DCHB">DC/H&B (Drug Channel / Health & Beauty)</option>
+        </select>
+    </div>
+
+    <button id="goBtn" class="btn btn-primary w-100">Go</button>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    <script>
+        $('#goBtn').click(function () {
+            const format = $('#formatSelect').val();
+
+            // ✅ Check Review ID
+            const reviewId = localStorage.getItem('currentReviewId');
+            if (!reviewId || reviewId === "null" || reviewId === "undefined" || reviewId.trim() === "") {
+                Swal.fire({
+                    title: 'Action Required',
+                    text: 'Please submit the Review form properly before proceeding.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // ✅ Review ID exists → show success modal
+            Swal.fire({
+                title: 'Success',
+                text: 'Review is there in local storage. Click OK to proceed.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (!format) {
+                        Swal.fire({
+                            title: 'Missing Selection',
+                            text: 'Please select a format.',
+                            icon: 'info',
+                            confirmButtonText: 'OK'
+                        });
+                        return;
+                    }
+
+                    // Add version param (timestamp to bust cache)
+                    const version = new Date().getTime();
+
+                    switch (format) {
+                        case "OTC":
+                            window.location.href = '@Url.Action("PreVisit", "StoreVisit")' + '?channelType=OTC&v=' + version;
+                            break;
+
+                        case "SS":
+                            window.location.href = '@Url.Action("PreVisit", "StoreVisit")' + '?channelType=SS&v=' + version;
+                            break;
+
+                        case "Hybrid":
+                            window.location.href = '@Url.Action("PreVisit", "StoreVisit")' + '?channelType=Hybrid&v=' + version;
+                            break;
+
+                        case "DCHB":
+                            window.location.href = '@Url.Action("PreVisit", "StoreVisit")' + '?channelType=DCHB&v=' + version;
+                            break;
+
+                        default:
+                            Swal.fire({
+                                title: 'Invalid',
+                                text: 'Invalid selection.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                            break;
+                    }
+                }
+            });
+        });
+    </script>
+
+}

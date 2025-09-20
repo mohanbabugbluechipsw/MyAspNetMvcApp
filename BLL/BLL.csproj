@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net9.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspose.Email" Version="25.6.0" />
+    <PackageReference Include="Azure.Communication.Email" Version="1.0.1" />
+    <PackageReference Include="Microsoft.Exchange.WebServices" Version="2.2.0" />
+	
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DAL\DAL.csproj" />
+    <ProjectReference Include="..\Model_New\Model_New.csproj" />
+  </ItemGroup>
+
+</Project>

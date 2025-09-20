@@ -1,0 +1,69 @@
+﻿@{
+    ViewData["Title"] = "Account Manager Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary"><i class="bi bi-graph-up"></i> Account Manager Dashboard</h2>
+
+    <div class="row g-4">
+        <!-- Summary Cards -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Total Accounts</h5>
+                    <p class="card-text fs-3 fw-bold text-success">120</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Active Managers</h5>
+                    <p class="card-text fs-3 fw-bold text-info">15</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Reports</h5>
+                    <p class="card-text fs-3 fw-bold text-danger">7</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="card shadow-sm border-0 mt-5">
+        <div class="card-header bg-primary text-white">
+            Recent Reports
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Manager</th>
+                        <th>Status</th>
+                        <th>Submitted On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>R-1001</td>
+                        <td>John Doe</td>
+                        <td><span class="badge bg-success">Approved</span></td>
+                        <td>2025-09-15</td>
+                    </tr>
+                    <tr>
+                        <td>R-1002</td>
+                        <td>Jane Smith</td>
+                        <td><span class="badge bg-warning">Pending</span></td>
+                        <td>2025-09-14</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

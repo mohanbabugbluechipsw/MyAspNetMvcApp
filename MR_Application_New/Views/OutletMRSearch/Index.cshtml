@@ -1,0 +1,554 @@
+﻿@* @model List<Model_New.ViewModels.RSOutletSearchModel>
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+<form asp-action="Index" method="get">
+    <div class="form-group">
+        <label>RS Code</label>
+        <select id="rsCodeDropdown" name="rsCode" class="form-control" onchange="bindRSName()">
+            <option value="">Select RS Code</option>
+            @foreach (var user in ViewBag.RSCodes as List<SelectListItem>)
+            {
+                <option value="@user.Value" @(user.Value == ViewBag.SelectedRSCode ? "selected" : "")>@user.Text</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>RS Name</label>
+        <input type="text" id="rsNameInput" name="rsName" class="form-control" value="@ViewBag.SelectedRSName" readonly />
+    </div>
+
+    <div class="form-group">
+        <label>From Date</label>
+        <input type="date" name="fromDate" class="form-control" value="@ViewBag.SelectedFromDate" />
+    </div>
+
+    <div class="form-group">
+        <label>To Date</label>
+        <input type="date" name="toDate" class="form-control" value="@ViewBag.SelectedToDate" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<br />
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>MR Name</th>
+                <th>Outlet Code</th>
+                <th>Party Name</th>
+                <th>Primary Channel</th>
+                <th>Status</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.MrName</td>
+                    <td>@item.OutletCode</td>
+                    <td>@item.PartyName</td>
+                    <td>@item.PrimaryChannel</td>
+                    <td>@item.Status</td>
+                    <td>@item.StartTime</td>
+                    <td>@item.EndTime</td>
+                    <td>@item.Date</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (Model != null && !Model.Any())
+{
+    <div class="alert alert-info">No records found.</div>
+}
+
+@section Scripts {
+    <script>
+        // RS Code to RS Name mapping
+        var rsCodeNameMap = @Html.Raw(ViewBag.RSCodeNameMap);
+
+        // When RS Code changes, update RS Name
+        function bindRSName() {
+            var selectedCode = document.getElementById('rsCodeDropdown').value;
+            document.getElementById('rsNameInput').value = rsCodeNameMap[selectedCode] || '';
+        }
+
+        // Auto-fill RS Name if returning with selected value
+        window.onload = function () {
+            bindRSName();
+        }
+    </script>
+}
+ *@
+
+@* 
+@model List<Model_New.ViewModels.RSOutletSearchModel>
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Outlet MR Search";
+
+    var rsCodes = ViewBag.RSCodes as List<SelectListItem>;
+    string selectedRSCode = ViewBag.SelectedRSCode as string ?? "";
+    string selectedRSName = ViewBag.SelectedRSName as string ?? "";
+    string selectedFromDate = ViewBag.SelectedFromDate as string ?? "";
+    string selectedToDate = ViewBag.SelectedToDate as string ?? "";
+}
+
+<h2 class="mb-4 text-primary fw-bold border-bottom pb-2">
+    <i class="fas fa-search"></i> Outlet MR Search
+</h2>
+
+<form method="get" asp-action="Index" asp-controller="OutletMRSearch" class="row g-3 mb-4 p-4 bg-white shadow-sm rounded border">
+    <div class="col-md-4">
+        <label for="rsCodeDropdown" class="form-label fw-semibold">
+            <i class="fas fa-barcode"></i> RS Code
+        </label>
+        <select id="rsCodeDropdown" name="rsCode" class="form-select custom-select-lg" onchange="bindRSName()" required>
+            <option value="">-- Select RS Code --</option>
+            @foreach (var user in rsCodes)
+            {
+                <option value="@user.Value" @(user.Value == selectedRSCode ? "selected" : "")>@user.Text</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label for="rsNameInput" class="form-label fw-semibold">
+            <i class="fas fa-user"></i> RS Name
+        </label>
+        <input type="text" id="rsNameInput" name="rsName" class="form-control form-control-lg" value="@selectedRSName" readonly />
+    </div>
+
+    <div class="col-md-4">
+        <label for="fromDate" class="form-label fw-semibold">
+            <i class="fas fa-calendar-plus"></i> From Date
+        </label>
+        <input type="text" id="fromDate" name="fromDate" class="form-control form-control-lg" value="@selectedFromDate" required />
+    </div>
+
+    <div class="col-md-4">
+        <label for="toDate" class="form-label fw-semibold">
+            <i class="fas fa-calendar-check"></i> To Date
+        </label>
+        <input type="text" id="toDate" name="toDate" class="form-control form-control-lg" value="@selectedToDate" required />
+    </div>
+
+    <div class="col-12 text-end mt-3">
+        <button type="submit" class="btn btn-primary px-4">
+            <i class="fas fa-search"></i> Search
+        </button>
+    </div>
+</form>
+
+@if (Model != null && Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-bordered shadow-sm">
+            <thead class="text-center align-middle table-light text-dark">
+                <tr>
+                    <th>MR Name</th>
+                    <th>Outlet Code</th>
+                    <th>Party Name</th>
+                    <th>Primary Channel</th>
+                    <th>Status</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="text-center">
+                        <td>@item.MrName</td>
+                        <td>@item.OutletCode</td>
+                        <td>@item.PartyName</td>
+                        <td>@item.PrimaryChannel</td>
+                        <td>@item.Status</td>
+                        <td>@item.StartTime</td>
+                        <td>@item.EndTime</td>
+                        <td>@item.Date</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else if (ViewBag.SelectedRSCode != null || ViewBag.SelectedFromDate != null || ViewBag.SelectedToDate != null)
+{
+    <p class="text-danger mt-3 fw-semibold">No data found for the given filter.</p>
+}
+else
+{
+    <p class="text-secondary mt-3">Please select RS Code and date range to view the report.</p>
+}
+
+@section Scripts {
+    <script>
+        // RS Code to RS Name mapping
+        var rsCodeNameMap = @Html.Raw(ViewBag.RSCodeNameMap);
+
+        function bindRSName() {
+            var selectedCode = document.getElementById('rsCodeDropdown').value;
+            document.getElementById('rsNameInput').value = rsCodeNameMap[selectedCode] || '';
+        }
+
+        // Auto fill on page load if selection is retained
+        window.onload = function () {
+            bindRSName();
+        };
+
+        $(document).ready(function () {
+            flatpickr("#fromDate", { dateFormat: "Y-m-d", allowInput: true });
+            flatpickr("#toDate", { dateFormat: "Y-m-d", allowInput: true });
+        });
+    </script>
+}
+ *@
+
+
+@* 
+@model List<Model_New.ViewModels.RSOutletSearchModel>
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Outlet MR Search";
+
+    var rsCodes = ViewBag.RSCodes as List<SelectListItem>;
+    string selectedRSCode = ViewBag.SelectedRSCode as string ?? "";
+    string selectedRSName = ViewBag.SelectedRSName as string ?? "";
+    string selectedFromDate = ViewBag.SelectedFromDate as string ?? "";
+    string selectedToDate = ViewBag.SelectedToDate as string ?? "";
+}
+
+<h2 class="mb-4 text-primary fw-bold border-bottom pb-2">
+    <i class="fas fa-search"></i> Outlet MR Search
+</h2>
+
+<form method="get" asp-action="Index" asp-controller="OutletMRSearch" class="row g-3 mb-4 p-4 bg-white shadow-sm rounded border">
+    <div class="col-md-4">
+        <label for="rsCodeDropdown" class="form-label fw-semibold">
+            <i class="fas fa-barcode"></i> RS Code
+        </label>
+        <select id="rsCodeDropdown" name="rsCode" class="form-select custom-select-lg" onchange="bindRSName()" required>
+            <option value="">-- Select RS Code --</option>
+            @foreach (var user in rsCodes)
+            {
+                <option value="@user.Value" @(user.Value == selectedRSCode ? "selected" : "")>@user.Text</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label for="rsNameInput" class="form-label fw-semibold">
+            <i class="fas fa-user"></i> RS Name
+        </label>
+        <input type="text" id="rsNameInput" name="rsName" class="form-control form-control-lg" value="@selectedRSName" readonly />
+    </div>
+
+    <div class="col-md-4">
+        <label for="fromDate" class="form-label fw-semibold">
+            <i class="fas fa-calendar-plus"></i> From Date
+        </label>
+        <input type="text" id="fromDate" name="fromDate" class="form-control form-control-lg" value="@selectedFromDate" required />
+    </div>
+
+    <div class="col-md-4">
+        <label for="toDate" class="form-label fw-semibold">
+            <i class="fas fa-calendar-check"></i> To Date
+        </label>
+        <input type="text" id="toDate" name="toDate" class="form-control form-control-lg" value="@selectedToDate" required />
+    </div>
+
+    <div class="col-12 text-end mt-3">
+        <button type="submit" class="btn btn-primary px-4">
+            <i class="fas fa-search"></i> Search
+        </button>
+    </div>
+</form>
+
+@if (Model != null && Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-bordered shadow-sm">
+            <thead class="text-center align-middle table-light text-dark">
+                <tr>
+                    <th>MR Name</th>
+                    <th>Outlet Code</th>
+                    <th>Party Name</th>
+                    <th>Primary Channel</th>
+                    <th>Status</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="text-center">
+                        <td>@item.MrName</td>
+                        <td>@item.OutletCode</td>
+                        <td>@item.PartyName</td>
+                        <td>@item.PrimaryChannel</td>
+                        <td>@item.Status</td>
+                        <td>@item.StartTime</td>
+                        <td>@item.EndTime</td>
+                        <td>@item.Date</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else if (ViewBag.SelectedRSCode != null || ViewBag.SelectedFromDate != null || ViewBag.SelectedToDate != null)
+{
+    <p class="text-danger mt-3 fw-semibold">No data found for the given filter.</p>
+}
+else
+{
+    <p class="text-secondary mt-3">Please select RS Code and date range to view the report.</p>
+}
+
+@section Scripts {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Apply Select2 for RS Code Dropdown
+            $('#rsCodeDropdown').select2({
+                width: '100%',
+                placeholder: '-- Select RS Code --',
+                allowClear: true,
+                minimumResultsForSearch: 10,
+                dropdownParent: $('#rsCodeDropdown').parent()
+            });
+
+            // Apply flatpickr for date fields
+            flatpickr("#fromDate", { dateFormat: "Y-m-d", allowInput: true });
+            flatpickr("#toDate", { dateFormat: "Y-m-d", allowInput: true });
+        });
+
+        // RS Code to RS Name mapping from controller
+        var rsCodeNameMap = @Html.Raw(ViewBag.RSCodeNameMap);
+
+        function bindRSName() {
+            var selectedCode = document.getElementById('rsCodeDropdown').value;
+            document.getElementById('rsNameInput').value = rsCodeNameMap[selectedCode] || '';
+        }
+
+        window.onload = function () {
+            bindRSName();
+        };
+    </script>
+}
+ *@
+
+
+@model List<Model_New.ViewModels.RSOutletSearchModel>
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Outlet MR Search";
+
+    var rsCodeNameMap = ViewBag.RSCodeNameMap as string ?? "{}";
+    var rsCodes = ViewBag.RSCodes as List<SelectListItem>;
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = ViewBag.PageSize ?? 10;
+}
+
+<h2 class="mb-4 text-primary fw-bold border-bottom pb-2">
+    <i class="fas fa-search"></i> Outlet MR Search
+</h2>
+
+<form method="get" asp-action="Index" class="row g-3 mb-4 p-4 bg-white shadow-sm rounded border">
+    <div class="col-md-4">
+        <label for="rsCode" class="form-label fw-semibold">
+            <i class="fas fa-code"></i> RS Code
+        </label>
+        <select id="rsCode" name="rsCode" class="form-select" required>
+            <option value="">-- Select RS Code --</option>
+            @foreach (var item in rsCodes)
+            {
+                <option value="@item.Value" @(item.Value == ViewBag.SelectedRSCode ? "selected" : "")>@item.Text</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label for="rsName" class="form-label fw-semibold">
+            <i class="fas fa-user"></i> RS Name
+        </label>
+        <input type="text" id="rsName" name="rsName" class="form-control" readonly value="@ViewBag.SelectedRSName" />
+    </div>
+
+    <div class="col-md-4">
+        <label for="fromDate" class="form-label fw-semibold">
+            <i class="fas fa-calendar-plus"></i> From Date
+        </label>
+        <input type="date" id="fromDate" name="fromDate" class="form-control" value="@ViewBag.SelectedFromDate" required />
+    </div>
+
+    <div class="col-md-4">
+        <label for="toDate" class="form-label fw-semibold">
+            <i class="fas fa-calendar-check"></i> To Date
+        </label>
+        <input type="date" id="toDate" name="toDate" class="form-control" value="@ViewBag.SelectedToDate" required />
+    </div>
+
+    <div class="col-12 text-end mt-3">
+        <button type="submit" class="btn btn-primary px-4">
+            <i class="fas fa-search"></i> Search
+        </button>
+    </div>
+</form>
+
+@if (Model != null && Model.Count > 0)
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-semibold text-secondary mb-0">Showing Results</h5>
+        <div class="d-flex align-items-center gap-2">
+            <label for="pageSize" class="form-label mb-0 me-2">
+                <i class="fas fa-list-ol"></i> Rows per page:
+            </label>
+            <select id="pageSize" class="form-select" style="width: auto;" onchange="changePageSize(this)">
+                @foreach (var size in new[] { 5, 10, 25, 50, 100 })
+                {
+                    <option value="@size" @(size == pageSize ? "selected" : "")>@size</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle table-bordered shadow-sm">
+            <thead class="text-center align-middle table-light text-dark">
+                <tr>
+                    <th>RS Code</th>
+                    <th>RS Name</th>
+                    <th>MR Name</th>
+                    <th>Outlet Code</th>
+                    <th>Party Name</th>
+                    <th>Primary Channel</th>
+                    <th>Status</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="text-center">
+                        <td>@item.RS_Code</td>
+                        <td>@item.RS_Name</td>
+                        <td>@item.MrName</td>
+                        <td>@item.OutletCode</td>
+                        <td>@item.PartyName</td>
+                        <td>@item.PrimaryChannel</td>
+                        <td>@item.Status</td>
+                        <td>@item.StartTime</td>
+                        <td>@item.EndTime</td>
+                        <td>@item.Date</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination mt-4 justify-content-center d-flex flex-wrap">
+        @if (currentPage > 1)
+        {
+            <a class="page-link" href="@BuildPageUrl(1)">First</a>
+            <a class="page-link" href="@BuildPageUrl(currentPage - 1)">Previous</a>
+        }
+
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            if (i == currentPage)
+            {
+                <span class="active-page">@i</span>
+            }
+            else
+            {
+                <a class="page-link" href="@BuildPageUrl(i)">@i</a>
+            }
+        }
+
+        @if (currentPage < totalPages)
+        {
+            <a class="page-link" href="@BuildPageUrl(currentPage + 1)">Next</a>
+            <a class="page-link" href="@BuildPageUrl(totalPages)">Last</a>
+        }
+    </div>
+}
+else if (ViewBag.SelectedRSCode != null || ViewBag.SelectedFromDate != null || ViewBag.SelectedToDate != null)
+{
+    <p class="text-danger mt-3 fw-semibold">No data found for the given filter.</p>
+}
+else
+{
+    <p class="text-secondary mt-3">Please select RS Code and date range to view results.</p>
+}
+
+@functions {
+    public string BuildPageUrl(int page)
+    {
+        var rsCode = ViewBag.SelectedRSCode as string ?? "";
+        var rsName = ViewBag.SelectedRSName as string ?? "";
+        var fromDate = ViewBag.SelectedFromDate as string ?? "";
+        var toDate = ViewBag.SelectedToDate as string ?? "";
+        var pageSize = ViewBag.PageSize ?? 10;
+
+        return $"?rsCode={rsCode}&rsName={rsName}&fromDate={fromDate}&toDate={toDate}&page={page}&pageSize={pageSize}";
+    }
+}
+
+@section Scripts {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var rsCodeNameMap = @Html.Raw(ViewBag.RSCodeNameMap);
+
+            $('#rsCode').on('change', function () {
+                var selectedCode = $(this).val();
+                if (selectedCode && rsCodeNameMap[selectedCode]) {
+                    $('#rsName').val(rsCodeNameMap[selectedCode]);
+                } else {
+                    $('#rsName').val('');
+                }
+            });
+
+            $('#rsCode').select2({
+                width: '100%',
+                placeholder: '-- Select RS Code --',
+                allowClear: true
+            });
+        });
+
+        function changePageSize(select) {
+            const pageSize = select.value;
+            const urlParams = new URLSearchParams(window.location.search);
+
+            urlParams.set('pageSize', pageSize);
+            urlParams.set('page', '1'); // Reset to first page
+            window.location.search = urlParams.toString();
+        }
+    </script>
+}

@@ -1,0 +1,435 @@
+﻿@model List<Model_New.ViewModels.Tbl_DetailsummaryReportDto>
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Outlet Status";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    var users = ViewBag.Users as List<SelectListItem>;
+    int pageSize = ViewBag.PageSize ?? 10;
+    string sortColumn = ViewBag.SortColumn as string ?? "RS_Code";
+    string sortOrder = ViewBag.SortOrder as string ?? "asc";
+
+    string GetSortIcon(string column) =>
+        sortColumn == column ? (sortOrder == "asc" ? "fa-sort-up" : "fa-sort-down") : "fa-sort";
+
+    string GetSortUrl(string column)
+    {
+        string newSortOrder = (sortColumn == column && sortOrder == "asc") ? "desc" : "asc";
+        return $"?mrCode={ViewBag.MrCode}&monthStart={ViewBag.MonthStart}&monthEnd={ViewBag.MonthEnd}&page={currentPage}&pageSize={pageSize}&sortColumn={column}&sortOrder={newSortOrder}";
+    }
+
+    bool filtersApplied = !string.IsNullOrEmpty(ViewBag.MrCode) || !string.IsNullOrEmpty(ViewBag.MonthStart) || !string.IsNullOrEmpty(ViewBag.MonthEnd);
+}
+
+<!-- Enhanced Responsive Styles -->
+<style>
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table th, .table td {
+        word-break: break-word;
+        vertical-align: middle;
+    }
+
+    .table thead th {
+        background: #e9f0f7;
+        color: #212529;
+        white-space: nowrap;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f5faff;
+        transition: background-color 0.3s ease;
+    }
+
+    .badge {
+        font-size: 0.9rem;
+        border-radius: 0.375rem;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .sortable-header {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .sortable-header:hover {
+            background-color: #e0e0e0;
+        }
+
+    .form-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+        .pagination .page-link {
+            padding: 6px 12px;
+            margin: 2px;
+            background-color: #e9ecef;
+            color: #0d6efd;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+            .pagination .page-link:hover {
+                background-color: #0d6efd;
+                color: white;
+            }
+
+        .pagination .active-page {
+            padding: 6px 12px;
+            background-color: #0d6efd;
+            color: white;
+            font-weight: bold;
+            border-radius: 0.375rem;
+            border: 1px solid #0a58ca;
+        }
+
+    @@media (max-width: 768px) {
+        .table-responsive table
+
+    {
+        font-size: 0.85rem;
+    }
+
+    .form-control-lg,
+    .form-select-lg {
+        font-size: 1rem !important;
+        height: 42px !important;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.4rem !important;
+    }
+
+    .form-label i,
+    .form-label {
+        font-size: 0.95rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .pagination .page-link {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+        margin: 1px;
+    }
+
+    .pagination .active-page {
+        padding: 4px 8px;
+    }
+
+    .badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .form-card {
+        padding: 0.75rem;
+    }
+
+    }
+
+    @@media (max-width: 480px) {
+        .form-label
+
+    {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .d-flex {
+        flex-direction: column !important;
+    }
+
+    .text-end, .text-start {
+        text-align: center !important;
+    }
+
+    .col-sm-12.col-md-4 {
+        margin-bottom: 1rem;
+    }
+
+    .table-responsive {
+        border: none;
+    }
+
+    .table th, .table td {
+        padding: 0.3rem !important;
+        font-size: 0.75rem;
+    }
+
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    }
+</style>
+
+<div class="container-fluid">
+    <h2 class="mb-4 text-primary fw-bold border-bottom pb-2">
+        <i class="fas fa-store-alt"></i> Outlet Status
+    </h2>
+
+    <!-- Filter Form -->
+    <form method="get" asp-controller="GetDetailsummaryreport" asp-action="Index" class="row g-3 mb-4 p-3 p-md-4 bg-white shadow-sm rounded border">
+        <div class="col-12 col-md-4">
+            <div class="form-card">
+                <label class="form-label fw-bold"><i class="fas fa-user"></i> MR Name</label>
+                <input type="text" class="form-control form-control-lg" value="@(ViewBag.MrName)" readonly />
+                <input type="hidden" name="mrCode" value="@ViewBag.MrCode">
+
+
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="form-card">
+                <label for="monthStart" class="form-label fw-bold"><i class="fas fa-calendar-plus"></i> Month Start</label>
+                <input type="text" id="monthStart" name="monthStart" class="form-control form-control-lg" value="@ViewBag.MonthStart" required />
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="form-card">
+                <label for="monthEnd" class="form-label fw-bold"><i class="fas fa-calendar-check"></i> Month End</label>
+                <input type="text" id="monthEnd" name="monthEnd" class="form-control form-control-lg" value="@ViewBag.MonthEnd" required />
+            </div>
+        </div>
+
+        <div class="col-12 text-end mt-3">
+            <button type="submit" class="btn btn-primary px-4"><i class="fas fa-filter"></i>search</button>
+        </div>
+    </form>
+
+    <!-- Excel Export -->
+    <div class="text-end mb-4">
+        <a id="exportExcelBtn" class="btn btn-success px-4" href="#"><i class="fas fa-file-excel"></i> Download Excel</a>
+    </div>
+
+    <!-- Table Content -->
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+            <h5 class="fw-semibold text-secondary mb-2 mb-md-0">Showing results</h5>
+            <div class="d-flex align-items-center gap-2">
+                <label for="pageSize" class="form-label mb-0 me-2"><i class="fas fa-list-ol"></i> Rows per page:</label>
+                <select id="pageSize" class="form-select" style="width: auto;" onchange="changePageSize(this)">
+                    @foreach (var size in new[] { 5, 10, 25, 50, 100, 200 })
+                    {
+                        <option value="@size" @(size == pageSize ? "selected" : "")>@size</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="table-wrapper table-responsive">
+            <table class="table table-hover align-middle table-bordered shadow-sm">
+                <thead class="text-center align-middle table-light text-dark">
+                    <tr>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("RS_Code")'">RS Code <i class="fas @GetSortIcon("RS_Code") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("OutletCode")'">Outlet Code <i class="fas @GetSortIcon("OutletCode") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("OutletName")'">Outlet Name <i class="fas @GetSortIcon("OutletName") ms-1"></i></th>
+
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("MrName")'">MrName <i class="fas @GetSortIcon("MrName") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("SrCode")'">SR Code <i class="fas @GetSortIcon("SrCode") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("RouteName")'">Route Name <i class="fas @GetSortIcon("RouteName") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("ChildParty")'">Child Party <i class="fas @GetSortIcon("ChildParty") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("ServicingPLG")'">Servicing PLG <i class="fas @GetSortIcon("ServicingPLG") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("Status")'">Status <i class="fas @GetSortIcon("Status") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("StartTime")'">Start Time <i class="fas @GetSortIcon("StartTime") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("EndTime")'">End Time <i class="fas @GetSortIcon("EndTime") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("StartDate")'">Start Date & Time <i class="fas @GetSortIcon("StartDate") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("EndDate")'">End Date & Time <i class="fas @GetSortIcon("EndDate") ms-1"></i></th>
+                        <th class="sortable-header" onclick="window.location.href='@GetSortUrl("TotalTimeSpent")'">Total Time Spent <i class="fas @GetSortIcon("TotalTimeSpent") ms-1"></i></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="text-center">
+                            <td>@item.RS_Code</td>
+                            <td>@item.OutletCode</td>
+                            <td>@item.OutletName</td>
+                            <td>@item.MrName</td>
+                            <td>@item.SrCode</td>
+                            <td>@item.RouteName</td>
+                            <td>@item.ChildParty</td>
+                            <td>@item.ServicingPLG</td>
+                            <td>
+                                @switch (item.Status)
+                                {
+                                    case "Completed":
+                                        <span class="badge bg-success text-white px-3 py-2"><i class="fas fa-check-circle me-1"></i> Completed</span>
+                                        ;
+                                        break;
+                                    case "Not Visited":
+                                        <span class="badge bg-secondary text-white px-3 py-2"><i class="fas fa-ban me-1"></i> Not Visited</span>
+                                        ;
+                                        break;
+                                    case "Visited":
+                                        <span class="badge bg-info text-white px-3 py-2"><i class="fas fa-eye me-1"></i> Visited</span>
+                                        ;
+                                        break;
+                                    default:
+                                        <span class="badge bg-warning text-dark px-3 py-2"><i class="fas fa-question-circle me-1"></i> @item.Status</span>
+                                        ;
+                                        break;
+                                }
+                            </td>
+                            <td>@item.StartTime</td>
+                            <td>@item.EndTime</td>
+                            <td>@(item.StartDate + " " + item.StartTime)</td>
+                            <td>@(item.EndDate + " " + item.EndTime)</td>
+                 
+                            <td>@item.TotalTimeSpent</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                @if (currentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=1&pageSize=@pageSize&sortColumn=@sortColumn&sortOrder=@sortOrder" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=@(currentPage - 1)&pageSize=@pageSize&sortColumn=@sortColumn&sortOrder=@sortOrder" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                }
+
+                @{
+                    int startPage = Math.Max(1, currentPage - 2);
+                    int endPage = Math.Min(totalPages, currentPage + 2);
+
+                    if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=1&pageSize=@pageSize&sortColumn=@sortColumn&sortOrder=@sortOrder">1</a>
+                        </li>
+                        if (startPage > 2)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                    }
+
+                    for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            @if (i == currentPage)
+                            {
+                                <span class="active-page">@i</span>
+                            }
+                            else
+                            {
+                                <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=@i&pageSize=@pageSize&sortColumn=@sortColumn&sortOrder=@sortOrder">@i</a>
+                            }
+                        </li>
+                    }
+
+                    if (endPage < totalPages)
+                    {
+                        if (endPage < totalPages - 1)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=@totalPages&pageSize=@pageSize&sortColumn=@sortColumn&sortOrder=@sortOrder">@totalPages</a>
+                        </li>
+                    }
+                }
+
+                @if (currentPage < totalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=@(currentPage + 1)&pageSize=@pageSize&sortColumn=@sortColumn&sortOrder=@sortOrder" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=@totalPages&pageSize=@pageSize&sortColumn=@sortColumn&sortOrder=@sortOrder" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+    else if (filtersApplied)
+    {
+        <p class="text-danger mt-3 fw-semibold">No data found for the given filter.</p>
+    }
+</div>
+
+@section Scripts {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+        $(document).ready(function () {
+            flatpickr("#monthStart", { dateFormat: "Y-m-d", allowInput: true, defaultDate: "@ViewBag.MonthStart" });
+            flatpickr("#monthEnd", { dateFormat: "Y-m-d", allowInput: true, defaultDate: "@ViewBag.MonthEnd" });
+        });
+
+        function changePageSize(select) {
+            const pageSize = select.value;
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('pageSize', pageSize);
+            urlParams.set('page', '1'); // reset to first page
+            window.location.search = urlParams.toString();
+        }
+
+        document.getElementById('exportExcelBtn').addEventListener('click', function (e) {
+            const mrCode = "@ViewBag.MrCode";
+            const monthStart = "@ViewBag.MonthStart";
+            const monthEnd = "@ViewBag.MonthEnd";
+
+            if (!mrCode || !monthStart || !monthEnd) {
+        alert("Please apply filter before downloading Excel.");
+                return;
+            }
+
+            const sortColumn = "@ViewBag.SortColumn";
+            const sortOrder = "@ViewBag.SortOrder";
+
+            const url = `@Url.Action("ExportToExcel", "GetDetailsummaryreport")?mrCode=${encodeURIComponent(mrCode)}&monthStart=${monthStart}&monthEnd=${monthEnd}&sortColumn=${sortColumn}&sortOrder=${sortOrder}`;
+            window.location.href = url;
+        });
+    </script>
+}

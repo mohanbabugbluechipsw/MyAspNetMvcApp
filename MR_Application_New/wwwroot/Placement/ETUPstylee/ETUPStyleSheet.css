@@ -1,0 +1,294 @@
+﻿body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f4f7f9;
+}
+
+.accordion {
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+    border: 2px solid #388E3C;
+    margin: 8px 0;
+    padding: 15px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-size: 16px;
+    text-align: left;
+}
+
+    .accordion:hover {
+        background: #45A049;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(0,0,0, 0.15);
+    }
+
+.panel {
+    padding: 15px;
+    margin: 10px 0;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    display: none;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.9em;
+}
+
+
+
+/* Hidden Sections Animation */
+.Panel > div {
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+
+
+.accordion.active .arrow {
+    transform: rotate(180deg);
+}
+
+#modelDisplayForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+
+.panel p {
+    font-size: 1.05rem;
+    color: #34495e;
+    margin-bottom: 15px;
+    font-weight: 500;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+
+.panel label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+    padding: 10px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+
+    .panel label:hover {
+        background: #e3f2fd;
+    }
+
+input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #3498db;
+}
+
+input[type="file"] {
+    padding: 10px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    width: 100%;
+    background: #fafafa;
+    transition: border-color 0.3s ease;
+}
+
+    input[type="file"]:hover {
+        border-color: #2196F3;
+    }
+
+
+
+.icon {
+    cursor: pointer;
+    color: #0288d1;
+    margin-left: 10px;
+}
+
+    .icon:hover {
+        color: #01579b;
+    }
+
+.hidden {
+    display: none;
+}
+
+
+
+
+
+
+
+
+
+/* Improved visibility toggling */
+.visible {
+    display: block !important;
+}
+
+
+
+
+
+
+
+
+
+
+/* Enhanced Sachet Hanger Styling */
+.sachetHangerAccordion {
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+    border: 2px solid #388E3C;
+    margin: 8px 0;
+    padding: 15px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-size: 16px;
+    text-align: left;
+}
+
+
+    .sachetHangerAccordion:hover {
+        background: #45A049;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+
+
+
+
+
+.sachetHangerPanel {
+    padding: 15px;
+    margin: 10px 0;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    display: none;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+
+
+
+
+
+
+
+#sachetHangerForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Question Styling */
+.sachetHangerPanel p {
+    font-size: 1.05rem;
+    color: #34495e;
+    margin-bottom: 15px;
+    font-weight: 500;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+/* Radio Button Styling */
+.sachetHangerPanel label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+    padding: 10px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+    .sachetHangerPanel label:hover {
+        background: #e3f2fd;
+    }
+
+
+
+
+
+
+input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #3498db;
+}
+
+/* Nested Sections */
+#sachetHangerOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+/* File Input Styling */
+input[type="file"] {
+    padding: 10px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    width: 100%;
+    background: #fafafa;
+    transition: border-color 0.3s ease;
+}
+
+    input[type="file"]:hover {
+        border-color: #2196F3;
+    }
+
+/* Sub-section Styling */
+.sachetHangerPanel .sachetHangerPanel {
+    background: #f8fafb;
+    border-left: 3px solid #3498db;
+    margin: 15px 0;
+    padding: 20px;
+}
+
+/* Arrow Animation */
+.sachetHangerArrow {
+    transition: transform 0.3s ease;
+    font-size: 0.9em;
+}
+
+.sachetHangerAccordion.active .sachetHangerArrow {
+    transform: rotate(180deg);
+}
+
+/* Hidden Sections Animation */
+.sachetHangerPanel > div {
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}

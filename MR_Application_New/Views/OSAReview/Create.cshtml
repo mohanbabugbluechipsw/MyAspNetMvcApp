@@ -1,0 +1,95 @@
+﻿@model Model_New.ViewModels.OSAReviewViewModel
+
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Create OSA Review" : "Edit OSA Review";
+}
+
+<div class="container">
+    <h2>@ViewData["Title"]</h2>
+
+    <form asp-action="@(Model.Id == 0 ? "Create" : "Update")" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        @if (Model.Id != 0)
+        {
+            <input type="hidden" asp-for="Id" />
+        }
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="RSCode" class="control-label"></label>
+                    <input asp-for="RSCode" class="form-control" />
+                    <span asp-validation-for="RSCode" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="PartyHLLCode" class="control-label"></label>
+                    <input asp-for="PartyHLLCode" class="form-control" />
+                    <span asp-validation-for="PartyHLLCode" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="OutletType" class="control-label"></label>
+                    <select asp-for="OutletType" class="form-control" asp-items="@(new SelectList(ViewBag.OutletTypes))">
+                        <option value="">-- Select --</option>
+                    </select>
+                    <span asp-validation-for="OutletType" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="QuId" class="control-label">Question ID</label>
+                    <input asp-for="QuId" class="form-control" />
+                    <span asp-validation-for="QuId" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label asp-for="QuestionText" class="control-label"></label>
+                    <input asp-for="QuestionText" class="form-control" />
+                    <span asp-validation-for="QuestionText" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label asp-for="Answer" class="control-label"></label>
+                    <textarea asp-for="Answer" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Answer" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="ReviewDate" class="control-label"></label>
+                    <input asp-for="ReviewDate" type="date" class="form-control" />
+                    <span asp-validation-for="ReviewDate" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

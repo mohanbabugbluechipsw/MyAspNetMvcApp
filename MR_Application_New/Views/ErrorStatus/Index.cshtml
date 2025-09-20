@@ -1,0 +1,73 @@
+﻿@model List<Model_New.Models.ApplicationErrorLog>
+
+@{
+    ViewData["Title"] = "Error Status Management";
+}
+
+<h2>Error Status Management</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div style="color:red;">@ViewBag.Error</div>
+}
+
+<table border="1" cellpadding="10">
+    <thead>
+        <tr>
+            <th>Error ID</th>
+            <th>Message</th>
+            <th>Endpoint</th>
+            <th>Status</th>
+            <th>Update Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var error in Model)
+        {
+            <tr>
+                <td>@error.ErrorLogId</td>
+                <td>@error.ErrorMessage</td>
+                <td>@error.Endpoint</td>
+                <td id="status-@error.ErrorLogId">@error.Status</td>
+                <td>
+                    <select onchange="updateStatus('@error.ErrorLogId', this.value)">
+                        <option selected disabled>Change Status</option>
+                        <option value="New">New</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                    </select>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div id="responseMessage" style="margin-top:20px; font-weight:bold;"></div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+         <script>
+            function updateStatus(errorId, status) {
+            $.ajax({
+                url: '/Errors/UpdateStatus', // Normal controller route
+                type: 'POST',
+                data: { id: errorId, status: status }, // Passing form data
+                success: function (response) {
+                    if (response.success) {
+                        $(`#status-${errorId}`).text(status);
+                        $('#responseMessage').text(response.message).css('color', 'green');
+                    } else {
+                        $('#responseMessage').text(response.message).css('color', 'red');
+                    }
+                },
+                error: function () {
+                    $('#responseMessage').text('An unexpected error occurred.').css('color', 'red');
+                }
+            });
+        }
+
+    </script>
+
+    </script>
+}

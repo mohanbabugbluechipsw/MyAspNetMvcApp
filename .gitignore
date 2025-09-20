@@ -1,0 +1,17 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build results
+bin/
+obj/
+*.exe
+*.dll
+
+# Publish
+*.Publish.xml
+Properties/PublishProfiles/
+Properties/ServiceDependencies/
+"MR_Application_New/appsettings.json" 
+"appsettings.*.json"    # ignore sensitive configs

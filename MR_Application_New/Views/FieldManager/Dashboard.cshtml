@@ -1,0 +1,77 @@
+﻿@{
+    ViewData["Title"] = "Field Manager Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary"><i class="bi bi-people"></i> Field Manager Dashboard</h2>
+
+    <div class="row g-4">
+        <!-- Summary Cards -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6>Total Outlets</h6>
+                    <p class="fs-3 fw-bold text-success">340</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6>Visited</h6>
+                    <p class="fs-3 fw-bold text-info">250</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6>Pending</h6>
+                    <p class="fs-3 fw-bold text-warning">60</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6>Not Visited</h6>
+                    <p class="fs-3 fw-bold text-danger">30</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="card shadow-sm border-0 mt-5">
+        <div class="card-header bg-primary text-white">
+            Today’s Visits
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Outlet Code</th>
+                        <th>Outlet Name</th>
+                        <th>Status</th>
+                        <th>Visit Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>O-001</td>
+                        <td>ABC Store</td>
+                        <td><span class="badge bg-success">Completed</span></td>
+                        <td>09:30 AM</td>
+                    </tr>
+                    <tr>
+                        <td>O-002</td>
+                        <td>XYZ Market</td>
+                        <td><span class="badge bg-warning">Pending</span></td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,420 @@
+﻿@model List<Model_New.ViewModels.Tbl_DetailsummaryReportDto>
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Outlet Status";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    var users = ViewBag.Users as List<SelectListItem>;
+    int selectedPageSize = ViewBag.PageSize ?? 10;
+}
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<style>
+    /* Gradient and modern styling */
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%) !important;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s;
+    }
+
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #3a56c8 0%, #1a3ab5 100%);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Card styling */
+    .card {
+        border: none;
+        border-radius: 0.35rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+    .card-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* Form elements */
+    .form-label {
+        font-weight: 600;
+        color: #4e73df;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control:focus, .form-select:focus, .select2-selection:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+
+    /* Table styling */
+    .table {
+        width: 100%;
+        margin-bottom: 1rem;
+        color: #5a5c69;
+    }
+
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #e3e6f0;
+            background-color: #f8f9fc;
+            color: #4e73df;
+            font-weight: 700;
+        }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+
+    /* Badge styling */
+    .badge-completed {
+        background: linear-gradient(135deg, #1cc88a 0%, #17a673 100%);
+        color: white;
+    }
+
+    .badge-visiting {
+        background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+        color: white;
+    }
+
+    .badge-notvisited {
+        background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
+        color: white;
+    }
+
+    .badge-active {
+        background: linear-gradient(135deg, #1cc88a 0%, #17a673 100%);
+        color: white;
+    }
+
+    .badge-inactive {
+        background: linear-gradient(135deg, #858796 0%, #666872 100%);
+        color: white;
+    }
+
+    /* Pagination styling */
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        border-color: #4e73df;
+    }
+
+    .page-link {
+        color: #4e73df;
+    }
+
+    /* Loading spinner */
+    #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+        background: rgba(255,255,255,0.9);
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    /* Animation */
+    .animate__animated {
+        animation-duration: 0.5s;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .filter-form .form-group {
+            margin-bottom: 15px;
+        }
+
+        .table-header-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    /* Select2 customization */
+    .select2-container--default .select2-selection--single {
+        height: calc(1.5em + 0.75rem + 2px);
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: calc(1.5em + 0.75rem + 2px);
+        }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4 animate__animated animate__fadeIn">
+        <div class="card-header py-3 bg-gradient-primary text-white">
+            <h6 class="m-0 font-weight-bold"><i class="fas fa-filter me-2"></i>Outlet Status Report</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" asp-controller="GetDetailsummaryreport" asp-action="Index" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label for="mrCode" class="form-label">MR Name</label>
+                    <select id="mrCode" name="mrCode" class="form-select select2" required>
+                        <option value="">-- Select MR --</option>
+                        @foreach (var user in users)
+                        {
+                            <option value="@user.Value" @(user.Value == ViewBag.MrCode ? "selected" : "")>@user.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="monthStart" class="form-label">Month Start</label>
+                    <div class="input-group">
+                        <input type="text" id="monthStart" name="monthStart" class="form-control datepicker" value="@ViewBag.MonthStart" required autocomplete="off" />
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="monthEnd" class="form-label">Month End</label>
+                    <div class="input-group">
+                        <input type="text" id="monthEnd" name="monthEnd" class="form-control datepicker" value="@ViewBag.MonthEnd" required autocomplete="off" />
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-gradient w-100">
+                        <i class="fas fa-filter me-1"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="loading" class="text-center" style="display:none;">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <p class="mt-2">Loading data...</p>
+    </div>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="card shadow mb-4 animate__animated animate__fadeInUp">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center bg-gradient-primary text-white">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-table me-2"></i>Outlet Status Results</h6>
+                <form method="get" class="form-inline">
+                    <input type="hidden" name="mrCode" value="@ViewBag.MrCode" />
+                    <input type="hidden" name="monthStart" value="@ViewBag.MonthStart" />
+                    <input type="hidden" name="monthEnd" value="@ViewBag.MonthEnd" />
+                    <input type="hidden" name="page" value="@currentPage" />
+                    <div class="input-group">
+                        <label for="pageSize" class="input-group-text">Rows:</label>
+                        <select name="pageSize" class="form-control" onchange="this.form.submit()">
+                            @foreach (var size in new[] { 5, 10, 25, 50, 100 })
+                            {
+                                <option value="@size" @(size == selectedPageSize ? "selected" : "")>@size</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>RS Code</th>
+                                <th>Outlet Code</th>
+                                <th>Status</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr class="animate__animated animate__fadeIn">
+                                    <td>@item.RS_Code</td>
+                                    <td>@item.OutletCode</td>
+                                    <td>
+                                        @{
+                                            var statusClass = "";
+                                            if (item.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                statusClass = "badge-completed";
+                                            }
+                                            else if (item.Status.Equals("Visiting", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                statusClass = "badge-visiting";
+                                            }
+                                            else if (item.Status.Equals("NotVisited", StringComparison.OrdinalIgnoreCase) ||
+                                            item.Status.Equals("Not Visited", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                statusClass = "badge-notvisited";
+                                            }
+                                            else if (item.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                statusClass = "badge-active";
+                                            }
+                                            else if (item.Status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                statusClass = "badge-inactive";
+                                            }
+                                            else
+                                            {
+                                                statusClass = "badge-secondary";
+                                            }
+                                        }
+                                        <span class="badge @statusClass">
+                                            @item.Status
+                                        </span>
+                                    </td>
+                                    <td>@item.StartTime</td>
+                                    <td>@item.EndTime</td>
+                                @*     <td>@item.Date</td> *@
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=1&pageSize=@selectedPageSize">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=@(currentPage - 1)&pageSize=@selectedPageSize">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+
+                        @{
+                            int startPage = Math.Max(1, currentPage - 2);
+                            int endPage = Math.Min(totalPages, currentPage + 2);
+
+                            if (startPage > 1)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+
+                            for (int i = startPage; i <= endPage; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=@i&pageSize=@selectedPageSize">@i</a>
+                                </li>
+                            }
+
+                            if (endPage < totalPages)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+                        }
+
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=@(currentPage + 1)&pageSize=@selectedPageSize">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="?mrCode=@ViewBag.MrCode&monthStart=@ViewBag.MonthStart&monthEnd=@ViewBag.MonthEnd&page=@totalPages&pageSize=@selectedPageSize">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+    else if (ViewBag.MrCode != null || ViewBag.MonthStart != null || ViewBag.MonthEnd != null)
+    {
+        <div class="card shadow mb-4 animate__animated animate__shakeX">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <h4 class="text-warning">No Data Found</h4>
+                <p class="text-muted">No data found for the given filter criteria</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow mb-4 animate__animated animate__fadeIn">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                <h4 class="text-info">Filter Required</h4>
+                <p class="text-muted">Please select MR and date range to view the report</p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Initialize Select2
+            $('.select2').select2({
+                width: '100%',
+                theme: 'bootstrap'
+            });
+
+            // Initialize date pickers
+            $('.datepicker').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                todayHighlight: true,
+                orientation: 'bottom auto',
+                templates: {
+                    leftArrow: '<i class="fas fa-chevron-left"></i>',
+                    rightArrow: '<i class="fas fa-chevron-right"></i>'
+                },
+                todayBtn: "linked",
+                clearBtn: true
+            });
+
+            // Make sure calendar icon triggers datepicker
+            $('.input-group-text').on('click', function() {
+                $(this).siblings('input').datepicker('show');
+            });
+
+            // Show loading spinner on form submission
+            $('form').on('submit', function() {
+                $('#loading').fadeIn();
+                $('body').css('cursor', 'wait');
+            });
+
+            // Add animation to table rows
+            $('tbody tr').each(function(index) {
+                $(this).css('animation-delay', (index * 0.1) + 's');
+            });
+
+            // Add hover effect to table rows
+            $('tbody tr').hover(
+                function() {
+                    $(this).addClass('bg-light');
+                },
+                function() {
+                    $(this).removeClass('bg-light');
+                }
+            );
+        });
+    </script>
+}

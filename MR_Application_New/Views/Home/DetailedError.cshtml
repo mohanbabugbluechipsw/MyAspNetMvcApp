@@ -1,0 +1,26 @@
+﻿@model dynamic
+@{
+    ViewData["Title"] = "Error Details";
+}
+
+<h1>Error Details</h1>
+
+<div class="alert alert-danger">
+    <h2>Error Reference: @Model.Reference</h2>
+    <p><strong>Message:</strong> @Model.Message</p>
+    <p><strong>Occurred at:</strong> @Model.Timestamp</p>
+
+    @if (Model.Details != null)
+    {
+        <div class="mt-3">
+            <h3>Technical Details</h3>
+            <pre>@Model.Details</pre>
+        </div>
+    }
+</div>
+
+<p>
+    Please provide the error reference when contacting support.
+    <br>
+    Support contact: @Model.SupportContact
+</p>

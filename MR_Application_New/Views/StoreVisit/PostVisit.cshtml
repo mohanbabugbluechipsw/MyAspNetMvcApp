@@ -1,0 +1,899 @@
+﻿@{
+    ViewData["Title"] = "Post-Visit Form";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var jsonData = ViewBag.QuestionJson as string;
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --accent-color: #1abc9c;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding-bottom: 60px;
+    }
+
+    .card-header {
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        color: white;
+    }
+
+    h2.text-primary {
+        color: var(--primary-color) !important;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        background: white;
+        height: 100%;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.15);
+        }
+
+    .btn-capture {
+        background: linear-gradient(to right, var(--accent-color), #16a085);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+        .btn-capture:hover {
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(26, 188, 156, 0.4);
+        }
+
+    .btn-submit {
+        background: linear-gradient(to right, var(--success-color), #219653);
+        color: white;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        border: none;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+        .btn-submit:hover {
+            transform: scale(1.05);
+            box-shadow: 0 7px 20px rgba(39, 174, 96, 0.4);
+        }
+
+    .img-thumbnail {
+        border-radius: 12px;
+        border: 2px solid #dee2e6;
+        transition: all 0.3s ease;
+        width: 100%;
+        height: auto;
+        max-height: 150px;
+        object-fit: cover;
+    }
+
+        .img-thumbnail:hover {
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+    .planogram-icon {
+        color: var(--secondary-color);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-size: 1.2rem !important;
+    }
+
+        .planogram-icon:hover {
+            color: var(--accent-color);
+            transform: scale(1.2);
+        }
+
+    .scroll-btn {
+        background: rgba(52, 152, 219, 0.1);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+        .scroll-btn:hover {
+            background: rgba(52, 152, 219, 0.3);
+            transform: scale(1.1);
+        }
+
+    /* Upload progress styling */
+    .upload-progress {
+        height: 6px;
+        margin-top: 5px;
+    }
+
+    .queued-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        z-index: 10;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 767.98px) {
+        h2.text-primary {
+            font-size: 1.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem !important;
+        }
+
+        .container {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .card {
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+
+        .btn-capture {
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+
+        .btn-submit {
+            padding: 10px 20px;
+            font-size: 1rem;
+            max-width: 100%;
+        }
+
+        .img-thumbnail {
+            max-height: 120px;
+        }
+
+        .modal-dialog {
+            margin: 10px;
+        }
+
+        .modal-content {
+            border-radius: 10px;
+        }
+
+        #planogramContainer img {
+            max-height: 50vh;
+        }
+
+        .queued-badge {
+            font-size: 0.7rem;
+            padding: 3px 6px;
+        }
+    }
+
+    @@media (min-width: 768px) and (max-width: 991.98px) {
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        .btn-submit {
+            max-width: 250px;
+        }
+    }
+
+    /* Landscape orientation fixes */
+    @@media screen and (orientation: landscape) and (max-width: 991.98px) {
+        body {
+            padding-bottom: 20px;
+        }
+
+        .img-thumbnail {
+            max-height: 100px;
+        }
+
+        .card {
+            margin-bottom: 10px;
+        }
+    }
+
+    /* Very small devices */
+    @@media (max-width: 360px) {
+        h2.text-primary {
+            font-size: 1.3rem;
+        }
+
+        .card h5 {
+            font-size: 0.95rem;
+        }
+
+        .btn-capture {
+            font-size: 0.8rem;
+            padding: 8px;
+        }
+    }
+
+    /* Large desktops */
+    @@media (min-width: 1200px) {
+        .container {
+            max-width: 1140px;
+        }
+    }
+</style>
+
+<h2 class="text-center my-4 fw-bold text-primary">
+    <i class="bi bi-camera me-2"></i>Post-Visit Form
+</h2>
+
+<div class="container px-3 px-md-5">
+    <form id="postVisitForm" enctype="multipart/form-data">
+        <input type="hidden" id="VisitId" value="@Model.VisitId" />
+        <input type="hidden" id="VisitType" value="Post-Visit" />
+        <input type="hidden" id="ChannelType" value="@Model.ChannelType" />
+
+        <div id="questionContainer" class="row g-3 g-md-4"></div>
+
+        <div class="row g-3 my-4">
+            <div class="col-12 col-md-6">
+                <div class="card p-3 shadow-sm rounded-4">
+                    <label for="backingPaper" class="form-label fw-bold text-primary mb-3">
+                        <i class="bi bi-file-earmark-text me-2"></i>Backing Paper Updated
+                    </label>
+                    <select id="backingPaper" class="form-select shadow-sm rounded-3" required>
+                        <option value="">-- Select --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="card p-3 shadow-sm rounded-4">
+                    <label for="shelfStrip" class="form-label fw-bold text-primary mb-3">
+                        <i class="bi bi-tags me-2"></i>Shelf Strip Updated
+                    </label>
+                    <select id="shelfStrip" class="form-select shadow-sm rounded-3" required>
+                        <option value="">-- Select --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center my-5">
+            <button type="button" id="submitButton" class="btn btn-submit btn-lg shadow-lg">
+                <i class="bi bi-check-circle me-2"></i> Submit Visit
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg rounded-4">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-image me-2"></i>Image Preview</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <img id="modalImage" src="" alt="Preview" class="img-fluid rounded-3 mb-4" style="max-height: 70vh;" />
+                <button type="button" id="retakeButton" class="btn btn-danger px-4">
+                    <i class="bi bi-arrow-repeat me-2"></i>Retake
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Planogram Modal -->
+<div class="modal fade" id="planogramModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content rounded-4 shadow-lg">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="bi bi-grid me-2"></i>Planogram View</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 id="planogramTitle" class="text-center w-100 fw-bold text-primary"></h5>
+                </div>
+                <div class="d-flex align-items-center">
+                    <button id="scrollLeft" class="scroll-btn me-2">
+                        <i class="bi bi-arrow-left fs-4"></i>
+                    </button>
+                    <div id="planogramContainer" class="d-flex overflow-auto flex-grow-1" style="gap: 15px; scroll-behavior: smooth;">
+                        <!-- Images will be injected here -->
+                    </div>
+                    <button id="scrollRight" class="scroll-btn ms-2">
+                        <i class="bi bi-arrow-right fs-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Global variables
+    const questions = @Html.Raw(jsonData);
+    const imagesUrls = {};
+    const imageFiles = {}; // Store image files for batch upload
+    let currentPreviewIndex = -1;
+    const baseUrl = "https://unileverslstorage001.blob.core.windows.net/planograms";
+
+    // Planogram data structure
+    const planograms = [
+        // OTC Format
+        { questionId: 8, format: "OTC", model: "Model 1", images: ["MD1.1.jpg", "MD1.2.jpg"] },
+        { questionId: 9, format: "OTC", model: "Model 2", images: ["MD2.1.jpg","MD2.2.jpg"] },
+        { questionId: 10, format: "OTC", model: "MD3: Savoury & Spreads", images: ["MD3 Savoury & Spreads.jpg"] },
+        { questionId: 11, format: "OTC", model: "MD4 : Malted Food Drinks (MFD)", images: ["MD4 MFD.jpg"] },
+        { questionId: 120, format: "OTC", model: "Baby Cabinet", images: ["DC Baby Care.jpg"] },
+        { questionId:12, format: "OTC", model: "Laundry Sachet Hanger", images: ["Sachet Hanger Laundry.jpg"] },
+        { questionId: 13, format: "OTC", model: "Savoury sachet Hanger", images: ["Sachet Hanger Savoury.jpg"] },
+        { questionId: 14, format: "OTC", model: "MFD sachet Hanger", images: ["Sachet Hanger MFD.jpg"] },
+
+        // SS Format
+        { questionId: 26, format: "SS", model: "Laundry", images: ["SS Laundry 2 bay.jpg", "SS Laundry 3 bay.jpg"] },
+        { questionId: 27, format: "SS", model: "Household Cleaning", images: ["SS HHC 1 bay.jpg"] },
+        { questionId: 28, format: "SS", model: "Hair Care", images: ["SS Hair Care 1 Bay.jpg", "SS Hair Care 2 Bay.jpg"] },
+        { questionId: 29, format: "SS", model: "Skin Care", images: ["SS Skin Care 1 bay.jpg", "SS Skin Care 2 bay.jpg"] },
+        { questionId: 30, format: "SS", model: "Skin Cleansing", images: ["SS Skin Cleansing 1 bay.jpg", "SS Skin Cleansing 2 Bay.jpg"] },
+        { questionId: 31, format: "SS", model: "Oral Care", images: ["SS Oral Care 1 Bay.jpg", "SS Oral Care 2 bay.1.jpg", "SS Oral Care 2 Bay.jpg"] },
+        { questionId: 32, format: "SS", model: "Baby Care", images: ["SS Baby Care 1 Bay.jpg"] },
+        { questionId: 33, format: "SS", model: "Deo & Fragrances", images: ["SS Deo & Fragrance.jpg", "SS Deo & Fragrances 2.jpg"] },
+        { questionId: 122, format: "SS", model: "Men's Care", images: ["SS Men's Care.jpg"] },
+        { questionId: 35, format: "SS", model: "Spreads", images: ["SS Spreads.jpg"] },
+        { questionId: 36, format: "SS", model: "Malted Food Drinks", images: ["SS MFD.jpg"] },
+        { questionId: 34, format: "SS", model: "Culinary", images: ["SS Savoury.jpg"] },
+
+        // DCHB Format
+        { questionId: 105, format: "DCHB", model: "Supplier Box", images: ["DC Supply Block.jpg"] },
+        { questionId: 106, format: "DCHB", model: "Hair Care", images: ["DC Hair Care.jpg"] },
+        { questionId: 107, format: "DCHB", model: "Face Care", images: ["DC Skin Care.jpg"] },
+        { questionId: 108, format: "DCHB", model: "Body Care", images: ["DC Skin Care.2.jpg"] },
+        { questionId: 109, format: "DCHB", model: "Deo & Fragrances", images: ["DC Deo & Fragrances.jpg"] },
+        { questionId: 110, format: "DCHB", model: "Men's Care", images: ["DC Mens Care.jpg"] },
+        { questionId: 111, format: "DCHB", model: "Baby Care", images: ["DC Baby Care.jpg"] },
+
+        // Hybrid Format
+        { questionId: 69, format: "Hybrid", model: "Model 1", images: ["MD1.1.jpg", "MD1.2.jpg"] },
+        { questionId: 70, format: "Hybrid", model: "Model 2", images: ["MD2.1.jpg","MD2.2.jpg"] },
+        { questionId: 71, format: "Hybrid", model: "MD3: Savoury & Spreads", images: ["MD3 Savoury & Spreads.jpg"] },
+        { questionId: 72, format: "Hybrid", model: "MD4 : Malted Food Drinks (MFD)", images: ["MD4 MFD.jpg"] },
+        { questionId: 127, format: "Hybrid", model: "Baby Cabinet", images: ["DC Baby Care.jpg"] },
+        { questionId: 73, format: "Hybrid", model: "Laundry Sachet Hanger", images: ["Sachet Hanger Laundry.jpg"] },
+        { questionId: 74, format: "Hybrid", model: "Savoury sachet Hanger", images: ["Sachet Hanger Savoury.jpg"] },
+        { questionId: 75, format: "Hybrid", model: "MFD sachet Hanger", images: ["Sachet Hanger MFD.jpg"] },
+        { questionId: 76, format: "Hybrid", model: "Laundry", images: ["SS Laundry 2 bay.jpg", "SS Laundry 3 bay.jpg"] },
+        { questionId: 77, format: "Hybrid", model: "Household Cleaning", images: ["SS HHC 1 bay.jpg"] },
+        { questionId: 78, format: "Hybrid", model: "Hair Care", images: ["SS Hair Care 1 Bay.jpg", "SS Hair Care 2 Bay.jpg"] },
+        { questionId: 79, format: "Hybrid", model: "Skin Care", images: ["SS Skin Care 1 bay.jpg", "SS Skin Care 2 bay.jpg"] },
+        { questionId: 80, format: "Hybrid", model: "Skin Cleansing", images: ["SS Skin Cleansing 1 bay.jpg", "SS Skin Cleansing 2 Bay.jpg"] },
+        { questionId: 81, format: "Hybrid", model: "Oral Care", images: ["SS Oral Care 1 Bay.jpg", "SS Oral Care 2 bay.1.jpg", "SS Oral Care 2 Bay.jpg"] },
+        { questionId: 82, format: "Hybrid", model: "Baby Care", images: ["SS Baby Care 1 Bay.jpg"] },
+        { questionId: 83, format: "Hybrid", model: "Deo & Fragrances", images: ["SS Deo & Fragrance.jpg", "SS Deo & Fragrances 2.jpg"] },
+        { questionId: 125, format: "Hybrid", model: "Men's Care", images: ["SS Men's Care.jpg"] },
+        { questionId: 85, format: "Hybrid", model: "Spreads", images: ["SS Spreads.jpg"] },
+        { questionId: 86, format: "Hybrid", model: "Malted Food Drinks", images: ["SS MFD.jpg"] },
+        { questionId: 84, format: "Hybrid", model: "Culinary", images: ["SS Savoury.jpg"] }
+    ];
+
+    // Initialize form
+    document.addEventListener('DOMContentLoaded', () => {
+        Swal.fire({
+            title: 'Loading Post-Visit Questions',
+            text: 'Please wait...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        const container = document.getElementById('questionContainer');
+        questions.forEach((q, index) => {
+            container.insertAdjacentHTML('beforeend', `
+                <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="card p-3 h-100 position-relative">
+                        <h5 class="mb-3 text-primary" style="font-size: clamp(0.9rem, 2vw, 1.1rem);">${q.Text}</h5>
+                        <div class="mb-3 d-flex align-items-center">
+                            <span class="fw-semibold text-secondary me-2">Planogram: </span>
+                            <i class="bi bi-image planogram-icon fs-5"
+                                onclick="showPlanogram(${q.QuestionId})"
+                                title="View Planogram"></i>
+                        </div>
+                        <input type="file" id="file_${index}" accept="image/*" capture="environment"
+                            class="d-none" data-index="${index}" onchange="handleCapture(this)" />
+                        <div class="position-relative">
+                            <button type="button" onclick="document.getElementById('file_${index}').click();"
+                                class="btn btn-capture w-100 py-2 py-md-3 mb-3">
+                                <i class="bi bi-camera-fill me-2"></i> Capture Photo
+                            </button>
+                            <span id="queuedBadge_${index}" class="queued-badge badge bg-warning d-none">Queued</span>
+                        </div>
+                        <img id="thumb_${index}" src="" class="img-thumbnail mb-2 d-none" />
+                        <div id="progress_${index}" class="progress w-100 upload-progress d-none">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <button id="previewBtn_${index}" type="button" onclick="showPreview(${index})"
+                            class="btn btn-outline-info w-100 d-none py-2 mt-2">
+                            <i class="bi bi-eye-fill me-2"></i> Preview Image
+                        </button>
+                    </div>
+                </div>
+            `);
+        });
+
+        Swal.close();
+    });
+
+    // Handle image capture
+    async function handleCapture(input) {
+        const index = input.getAttribute('data-index');
+        let file = input.files[0];
+        if (!file) return;
+
+        // Show queued status
+        document.getElementById(`queuedBadge_${index}`).classList.remove('d-none');
+
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById(`thumb_${index}`).src = e.target.result;
+            document.getElementById(`thumb_${index}`).classList.remove('d-none');
+            document.getElementById(`previewBtn_${index}`).classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+
+        // Store the file for batch upload
+        imageFiles[index] = file;
+
+        // Show success toast
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+        });
+
+        Toast.fire({
+            icon: 'success',
+            title: 'Photo queued for upload'
+        });
+
+        // Cleanup
+        input.value = "";
+    }
+
+    // Resize image function
+    function resizeImageToBlob(file, maxWidth, quality = 0.7) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+
+            img.onload = () => {
+                const scale = Math.min(maxWidth / img.width, 1);
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                canvas.toBlob(blob => {
+                    URL.revokeObjectURL(objectUrl);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    canvas.width = 0;
+                    canvas.height = 0;
+                    resolve(blob);
+                }, 'image/jpeg', quality);
+            };
+
+            img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                reject(new Error('Failed to load image'));
+            };
+
+            img.src = objectUrl;
+        });
+    }
+
+    // Batch upload images
+    async function uploadImagesBatch() {
+        const uploadPromises = [];
+        const indices = Object.keys(imageFiles);
+
+        if (indices.length === 0) {
+            return {};
+        }
+
+        // Show overall progress
+        const progressToast = Swal.fire({
+            title: 'Uploading Images',
+            html: `Preparing to upload ${indices.length} images...`,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Process each image
+        for (const index of indices) {
+            const file = imageFiles[index];
+
+            // Show progress for this image
+            document.getElementById(`progress_${index}`).classList.remove('d-none');
+            document.getElementById(`queuedBadge_${index}`).classList.add('d-none');
+
+            try {
+                // Process image (resize + border)
+                const maxWidth = window.innerWidth > 768 ? 1024 : 800;
+                const processedBlob = await resizeImageToBlob(file, maxWidth, 0.7);
+                const processedFile = new File([processedBlob], file.name, { type: 'image/jpeg' });
+
+                // Prepare upload
+                const today = new Date();
+                const folder = `${today.toISOString().slice(0, 10).replace(/-/g, '')}_post_visit`;
+                const safeFileName = `postvisit_${Date.now()}_${index}.jpg`;
+                const fileName = `${folder}/${safeFileName}`;
+                const containerName = "visitphotos";
+
+                // Get SAS token
+                const sasRes = await fetch(`/api/Blob/GetUploadSas?fileName=${encodeURIComponent(fileName)}&container=${containerName}`);
+                if (!sasRes.ok) throw new Error('Failed to get upload URL');
+                const sasData = await sasRes.json();
+
+                // Create upload promise
+                const uploadPromise = fetch(sasData.uploadUrl, {
+                    method: 'PUT',
+                    headers: { "x-ms-blob-type": "BlockBlob" },
+                    body: processedFile
+                }).then(async (uploadResponse) => {
+                    if (!uploadResponse.ok) {
+                        const errorText = await uploadResponse.text();
+                        throw new Error(errorText || 'Upload failed');
+                    }
+
+                    // Update progress bar
+                    document.querySelector(`#progress_${index} .progress-bar`).style.width = '100%';
+
+                    return { index, url: sasData.viewUrl };
+                }).catch(error => {
+                    console.error(`Upload failed for image ${index}:`, error);
+                    document.querySelector(`#progress_${index} .progress-bar`).classList.add('bg-danger');
+                    throw error;
+                });
+
+                uploadPromises.push(uploadPromise);
+
+            } catch (error) {
+                console.error(`Processing failed for image ${index}:`, error);
+                document.querySelector(`#progress_${index} .progress-bar`).classList.add('bg-danger');
+            }
+        }
+
+        // Wait for all uploads to complete
+        try {
+            const results = await Promise.all(uploadPromises);
+            const uploadedUrls = {};
+
+            results.forEach(result => {
+                uploadedUrls[result.index] = result.url;
+            });
+
+            await progressToast.close();
+            return uploadedUrls;
+
+        } catch (error) {
+            await progressToast.close();
+            throw new Error('Some images failed to upload');
+        }
+    }
+
+    function showPreview(index) {
+        currentPreviewIndex = index;
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = document.getElementById(`thumb_${index}`).src;
+
+        const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+        modal.show();
+    }
+
+    // Handle retake button
+    document.getElementById('retakeButton').addEventListener('click', () => {
+        if (currentPreviewIndex >= 0) {
+            const input = document.getElementById(`file_${currentPreviewIndex}`);
+            const thumbEl = document.getElementById(`thumb_${currentPreviewIndex}`);
+            const previewBtn = document.getElementById(`previewBtn_${currentPreviewIndex}`);
+            const queuedBadge = document.getElementById(`queuedBadge_${currentPreviewIndex}`);
+            const modalImage = document.getElementById('modalImage');
+
+            // Clear input and UI
+            input.value = "";
+            thumbEl.src = "";
+            thumbEl.classList.add('d-none');
+            previewBtn.classList.add('d-none');
+            queuedBadge.classList.add('d-none');
+            modalImage.src = "";
+
+            // Remove from uploaded list
+            if (imagesUrls && imagesUrls[currentPreviewIndex]) {
+                delete imagesUrls[currentPreviewIndex];
+            }
+
+            // Remove from queued files
+            if (imageFiles && imageFiles[currentPreviewIndex]) {
+                delete imageFiles[currentPreviewIndex];
+            }
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('imageModal'));
+            modal.hide();
+        }
+    });
+
+    // Extra cleanup when modal closes
+    document.getElementById('imageModal').addEventListener('hidden.bs.modal', () => {
+        document.getElementById('modalImage').src = "";
+    });
+
+    // Show planogram modal
+    function showPlanogram(questionId) {
+        const channelType = document.getElementById('ChannelType').value;
+        const fallbackImg = `${baseUrl}/placeholder.jpg`;
+
+        // Find matching planogram
+        const planogram = planograms.find(p =>
+            p.questionId === questionId && p.format === channelType
+        );
+
+        if (!planogram) {
+            Swal.fire('Planogram Not Found', 'No planogram available for this question/channel', 'info');
+            return;
+        }
+
+        // Update title
+        document.getElementById('planogramTitle').textContent =
+            `${planogram.model} (${planogram.format})`;
+
+        // Build image paths
+        const imgPaths = planogram.images.map(img =>
+            `${baseUrl}/${planogram.format}/${encodeURIComponent(img)}`
+        );
+
+        const container = document.getElementById('planogramContainer');
+        container.innerHTML = '';
+
+        // Create image elements
+        imgPaths.forEach(path => {
+            const img = document.createElement('img');
+            img.classList.add('img-fluid');
+            img.style.maxHeight = window.innerWidth < 768 ? '50vh' : '70vh';
+            img.style.objectFit = 'contain';
+            img.style.borderRadius = '10px';
+            img.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+            img.style.minWidth = '300px';
+            img.src = path;
+            img.onerror = () => img.src = fallbackImg;
+            container.appendChild(img);
+        });
+
+        // Set up scrolling
+        const scrollLeftBtn = document.getElementById('scrollLeft');
+        const scrollRightBtn = document.getElementById('scrollRight');
+
+        scrollLeftBtn.onclick = () => container.scrollBy({ left: -300, behavior: 'smooth' });
+        scrollRightBtn.onclick = () => container.scrollBy({ left: 300, behavior: 'smooth' });
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('planogramModal'));
+        modal.show();
+    }
+
+    document.getElementById('submitButton').addEventListener('click', async function () {
+        const reviewId = localStorage.getItem('currentReviewId');
+        console.log("currentReviewId value from localStorage:", reviewId);
+
+        // Validate currentReviewId
+        if (!reviewId || reviewId === "null" || reviewId === "undefined") {
+            let message;
+
+            if (reviewId === null) {
+                message = 'The key "currentReviewId" does not exist in localStorage.';
+            } else if (reviewId === "null") {
+                message = 'The key "currentReviewId" has the string value "null".';
+            } else if (reviewId === "undefined") {
+                message = 'The key "currentReviewId" has the string value "undefined".';
+            } else if (reviewId.trim() === "") {
+                message = 'The key "currentReviewId" is empty in localStorage.';
+            }
+
+            Swal.fire({
+                title: 'currentReviewId Invalid',
+                text: message,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Check online status
+        if (!navigator.onLine) {
+            Swal.fire('Offline Mode', 'You are currently offline. Please connect to submit.', 'error');
+            return;
+        }
+
+        // Validate dropdowns
+        const backingPaper = document.getElementById('backingPaper').value;
+        const shelfStrip = document.getElementById('shelfStrip').value;
+        if (!backingPaper || !shelfStrip) {
+            Swal.fire('Validation Error', 'Please select both dropdown options.', 'warning');
+            return;
+        }
+
+        const visitId = document.getElementById('VisitId').value;
+        const channelType = document.getElementById('ChannelType').value;
+
+        try {
+            // First upload all images in a batch
+            if (Object.keys(imageFiles).length > 0) {
+                try {
+                    const uploadedUrls = await uploadImagesBatch();
+                    // Merge uploaded URLs into imagesUrls
+                    Object.assign(imagesUrls, uploadedUrls);
+                } catch (error) {
+                    console.error('Batch upload failed:', error);
+                    await Swal.fire({
+                        title: 'Upload Failed',
+                        text: 'Some images failed to upload. Please try again.',
+                        icon: 'error'
+                    });
+                    return;
+                }
+            }
+
+            const preVisitGuid = localStorage.getItem('preVisitGuid');
+            // Get required questions
+            const linkedRes = await fetch(`/StoreVisit/GetLinkedPostVisitQuestions?channelType=${channelType}&preVisitGuid=${encodeURIComponent(preVisitGuid)}`);
+            const requiredQuestions = await linkedRes.json();
+            const requiredIds = requiredQuestions.map(q => q.postVisitQuestionId);
+
+            // Highlight missing photos
+            document.querySelectorAll('#questionContainer h5').forEach(h => {
+                h.classList.remove('text-danger');
+                h.classList.add('text-primary');
+            });
+
+            const missingTexts = [];
+            const missingPhotos = requiredIds.filter(qid => {
+                const index = questions.findIndex(q => q.QuestionId === qid);
+                const hasPhoto = !!imagesUrls[index];
+                if (!hasPhoto) {
+                    const header = document.querySelector(`#file_${index}`).closest('.card').querySelector('h5');
+                    header.classList.remove('text-primary');
+                    header.classList.add('text-danger');
+                    missingTexts.push(questions[index].Text);
+                    return true;
+                }
+                return false;
+            });
+
+            // Check for missing mandatory photos
+            if (missingPhotos.length > 0) {
+                Swal.fire({
+                    title: 'Missing Mandatory Images',
+                    html: `<p class="mb-3">The following questions require photos:</p>
+                           <ul class="text-start">${missingTexts.map(t => `<li><b>${t}</b></li>`).join('')}</ul>`,
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            // Prepare answers
+            const answers = questions.map((q, i) => {
+                if (imagesUrls[i]) {
+                    return {
+                        QuestionId: q.QuestionId,
+                        Text: q.Text,
+                        BlobUrl: imagesUrls[i],
+                        IsNew: requiredIds.includes(q.QuestionId) ? 1 : 0
+                    };
+                }
+            }).filter(Boolean);
+
+            // Check if any photos exist
+            if (answers.length === 0) {
+                Swal.fire('No Photos', 'Please capture at least one photo.', 'warning');
+                return;
+            }
+
+            // Prepare payload with reviewId
+            const model = {
+                VisitId: visitId,
+                ReviewId: reviewId,
+                RowGuid: preVisitGuid,
+                VisitType: "Post-Visit",
+                ChannelType: channelType,
+                Answers: answers,
+                BackingPaperUpdated: backingPaper,
+                ShelfStripUpdated: shelfStrip
+            };
+
+            // Confirmation dialog
+            Swal.fire({
+                title: 'Confirm Submission?',
+                html: `<div class="text-start">
+                        <p><b>Backing Paper:</b> ${backingPaper}</p>
+                        <p><b>Shelf Strip:</b> ${shelfStrip}</p>
+                        <p><b>Review ID:</b> ${reviewId}</p>
+                        <p><b>RowGuid:</b> ${preVisitGuid}</p>
+                        <p class="mt-2">${answers.length} photos will be submitted</p>
+                       </div>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Submit',
+                confirmButtonColor: '#27ae60',
+                cancelButtonText: 'Cancel'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    this.disabled = true;
+
+                    // Submit data
+                    fetch('/StoreVisit/PostVisitJson', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(model)
+                    }).then(async response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                        throw new Error(await response.text());
+                    }).then(data => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Visit Submitted!',
+                            html: `<div class="text-center">
+                                    <i class="bi bi-check-circle-fill text-success fs-1 mb-3"></i>
+                                    <p class="fs-5">Your visit data has been successfully submitted</p>
+                                    <p class="small">Review ID: ${reviewId}</p>
+                                   </div>`,
+                            timer: 300000,
+                            showConfirmButton: true
+                        }).then(() => {
+                            // Clear reviewId after successful submission
+                            localStorage.removeItem('currentReviewId');
+                            localStorage.removeItem('preVisitGuid');
+                            window.location.href = '/StoreVisit/VisitCompleted';
+                        });
+                    }).catch(err => {
+                        this.disabled = false;
+                        Swal.fire('Submission Error', err.message || 'Failed to submit data', 'error');
+                    });
+                }
+            });
+        } catch (err) {
+            Swal.fire('Error', 'Unable to validate your submission. Please try again.', 'error');
+        }
+    });
+</script>

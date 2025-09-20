@@ -1,0 +1,77 @@
+﻿@using System.Security.Claims
+@{
+    var roleClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+}
+
+<ul class="navbar-nav ms-auto align-items-lg-center">
+    @if (User.Identity.IsAuthenticated)
+    {
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle"></i>
+                <span>@User.Identity.Name</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item" href="/Login/Logout">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        @switch (roleClaim)
+        {
+            case "Merchandiser User":
+                <li class="nav-item">
+                    <a class="nav-link" href="/ReviewPlane/Index">
+                        <i class="bi bi-search"></i> <span>Review Plan</span>
+                    </a>
+                </li>
+                break;
+
+            case "Administrator":
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-speedometer2"></i> <span>Admin</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/Admin/Index"><i class="bi bi-columns-gap"></i> Dashboard</a></li>
+                        <li><a class="dropdown-item" href="/Reports/VisitStatusPieChart"><i class="fas fa-file-alt me-2"></i> Visit Status</a></li>
+                        <li><a class="dropdown-item" href="/OutletMRSearch/Index"><i class="fas fa-store me-2"></i> Outlet Search</a></li>
+                    </ul>
+                </li>
+                break;
+
+            case "Account Manager":
+                <li class="nav-item">
+                    <a class="nav-link" href="/AccountManager/Dashboard">
+                        <i class="bi bi-graph-up"></i> <span>Account Manager</span>
+                    </a>
+                </li>
+                break;
+
+            case "FieldManager":
+                <li class="nav-item">
+                    <a class="nav-link" href="/FieldManager/Dashboard">
+                        <i class="bi bi-people"></i> <span>Field Manager</span>
+                    </a>
+                </li>
+                break;
+        }
+
+        <li class="nav-item">
+            <a class="nav-link" href="/Locations/Getcurrent">
+                <i class="bi bi-geo-alt"></i> <span>Map</span>
+            </a>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="/Login/Index">
+                <i class="bi bi-box-arrow-in-right"></i> <span>Login</span>
+            </a>
+        </li>
+    }
+</ul>

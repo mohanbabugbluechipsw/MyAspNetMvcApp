@@ -1,0 +1,203 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<form id="loginForm" asp-action="Index" method="post">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+                <h2 class="text-center mb-4">Login</h2>
+
+                <!-- Username -->
+                <div class="mb-3">
+                    <label for="UserName" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                        <input type="text" id="UserName" name="UserName" class="form-control" placeholder="Enter your username" required />
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="Password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                        <input type="password" id="Password" name="Password" class="form-control" placeholder="Enter your password" required minlength="6" />
+                    </div>
+                </div>
+
+                <!-- Capture Photo -->
+                <div class="mb-3">
+                    <label class="form-label">Capture Image</label>
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-secondary" id="captureBtn">
+                            <i class="bi bi-camera"></i> Capture Image
+                        </button>
+                        <input type="file" id="capturedImageInput" name="CapturedImage" accept="image/*" hidden />
+                    </div>
+                    <div id="preview" class="mt-2"></div>
+                    <input type="hidden" id="photoUrl" name="PhotoUrl" />
+                </div>
+
+                <!-- Submit -->
+                <div class="d-grid mt-3">
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Webcam Modal -->
+<div class="modal fade" id="webcamModal" tabindex="-1" aria-labelledby="webcamModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Capture Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <video id="webcam" autoplay playsinline style="max-width: 100%; border: 1px solid #ccc;"></video>
+                <canvas id="canvas" style="display: none;"></canvas>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="snapPhoto">Take Photo</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/sweetalert2@11.js"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        const webcamModal = new bootstrap.Modal(document.getElementById('webcamModal'));
+        let videoStream = null;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById('UserName').value = '';
+            document.getElementById('Password').value = '';
+
+            const video = document.getElementById('webcam');
+            const canvas = document.getElementById('canvas');
+            const snapBtn = document.getElementById('snapPhoto');
+            const preview = document.getElementById('preview');
+            const photoUrlInput = document.getElementById('photoUrl');
+
+            // Open modal & start webcam
+            document.getElementById('captureBtn').addEventListener('click', async function () {
+                try {
+                    videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    document.getElementById('webcamModal').addEventListener('shown.bs.modal', () => {
+                        video.srcObject = videoStream;
+                    }, { once: true });
+                    webcamModal.show();
+                } catch (err) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Camera Required',
+                        text: 'Please enable camera access to login',
+                        confirmButtonColor: '#007bff'
+                    });
+                }
+            });
+
+            // Take photo & upload
+            snapBtn.addEventListener('click', async () => {
+                const username = document.getElementById("UserName").value.trim();
+                if (username.length < 3) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Invalid Username',
+                        text: 'Please enter a valid username before capturing image.',
+                        confirmButtonColor: '#007bff'
+                    });
+                    return;
+                }
+
+                const context = canvas.getContext('2d');
+                const MAX_WIDTH = 800;
+                const scale = MAX_WIDTH / video.videoWidth;
+                canvas.width = MAX_WIDTH;
+                canvas.height = video.videoHeight * scale;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const now = new Date();
+                const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+                const fileName = `login-${username}-${timestamp}.jpg`;
+
+                canvas.toBlob(async blob => {
+                    try {
+                        const file = new File([blob], fileName, { type: 'image/jpeg', lastModified: Date.now() });
+                        const formData = new FormData();
+                        formData.append("file", file);
+
+                        const response = await fetch("/api/Blob/UploadLoginPhoto", {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        const raw = await response.text();
+                        if (!response.ok) throw new Error(`Upload failed (${response.status}).`);
+
+                        let data;
+                        try { data = JSON.parse(raw); }
+                        catch { throw new Error("Server returned invalid JSON."); }
+
+                        if (!data.url) throw new Error("Server response missing URL.");
+
+                        photoUrlInput.value = data.url;
+                        preview.innerHTML = `<img src="${data.url}" class="img-thumbnail" style="max-width: 200px;">`;
+                    } catch (error) {
+                        Swal.fire({ icon: 'error', title: 'Upload Failed', text: error.message });
+                    } finally {
+                        webcamModal.hide();
+                        if (videoStream) {
+                            videoStream.getTracks().forEach(track => track.stop());
+                            videoStream = null;
+                        }
+                    }
+                }, 'image/jpeg', 0.7);
+            });
+
+            // Form validation - dynamic message
+            document.getElementById("loginForm").addEventListener("submit", function (event) {
+                let missingFields = [];
+
+                if (document.getElementById("UserName").value.trim().length < 3)
+                    missingFields.push("Enter a valid username");
+
+                if (document.getElementById("Password").value.length < 6)
+                    missingFields.push("Enter a valid password (min 6 characters)");
+
+                if (!photoUrlInput.value)
+                    missingFields.push("Capture your photo");
+
+                if (missingFields.length > 0) {
+                    event.preventDefault();
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Missing Information',
+                        html: `<ul style="text-align:left;">${missingFields.map(f => `<li>${f}</li>`).join("")}</ul>`,
+                        confirmButtonColor: '#007bff'
+                    });
+                }
+            });
+
+            // Server-side error popup
+            const errorMessage = "@Html.Raw(ViewData["ErrorMessage"])";
+            if (errorMessage) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: errorMessage,
+                    confirmButtonColor: '#d33'
+                });
+            }
+        });
+    </script>
+}

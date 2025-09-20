@@ -1,0 +1,1830 @@
+﻿@* @using Model_New.ViewModels
+@model VisitStatusChartViewModel
+
+@{
+    ViewData["Title"] = "Visit Status Pie Chart";
+    var users = ViewBag.Users as List<SelectListItem>;
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Outlet Visit Status</h2>
+
+    <!-- Filter Form -->
+    <form method="get" asp-action="VisitStatusPieChart" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <select name="mrName" class="form-select" required>
+                <option value="">-- Select MR Name --</option>
+                @foreach (var user in users ?? new List<SelectListItem>())
+                {
+                    <option value="@user.Value" @(user.Value == (string)ViewBag.MrName ? "selected" : "")>
+                        @user.Text
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate" required />
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate" required />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100">Show Chart</button>
+        </div>
+    </form>
+
+    <!-- Error Message -->
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    }
+
+    <!-- Chart Display -->
+    @if (Model != null)
+    {
+        <div class="d-flex justify-content-center gap-3 mb-3">
+            <span class="badge bg-success">Completed: @Model.CompletedCount</span>
+            <span class="badge bg-warning text-dark">Visited: @Model.VisitedCount</span>
+            <span class="badge bg-danger">Not Visited: @Model.NotVisitedCount</span>
+        </div>
+
+        <div class="card shadow p-4">
+            <div class="d-flex justify-content-center align-items-start flex-wrap gap-5">
+
+                <!-- RS Details (LEFT SIDE) -->
+                <div class="text-start" style="min-width: 260px;">
+                    <p class="mb-1 fw-bold text-muted">RS Code:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.RS_Code</p>
+
+                    <p class="mb-1 fw-bold text-muted">RS Name:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.RS_Name</p>
+
+                    <p class="mb-1 fw-bold text-muted">Region:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.Region</p>
+
+                    <p class="mb-1 fw-bold text-muted">Area:</p>
+                    <p class="mb-0 fs-5 text-dark">@Model.Area</p>
+                </div>
+
+                <!-- CHART (RIGHT SIDE) -->
+                <div style="position: relative; width: 300px;">
+                    <canvas id="statusChart" height="300"></canvas>
+                    <div id="centerText"
+                         style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                                text-align:center; font-weight:600; font-size:16px; line-height:1.3;">
+                        <div style="font-size:14px; color:gray;">Total Outlet Count</div>
+                        <div style="font-size:20px;">@Model.TotalCount</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Legend -->
+            <div class="mt-4 d-flex justify-content-center gap-4">
+                <div><span class="badge" style="background-color: #28a745;">&nbsp;</span> Completed</div>
+                <div><span class="badge" style="background-color: #ffc107;">&nbsp;</span> Visited</div>
+                <div><span class="badge" style="background-color: #dc3545;">&nbsp;</span> Not Visited</div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+@if (Model != null)
+{
+    <script>
+        const originalData = [@Model.CompletedCount, @Model.VisitedCount, @Model.NotVisitedCount];
+        const total = originalData.reduce((a, b) => a + b, 0);
+        const minAngle = 3;
+        const minRatio = minAngle / 360;
+
+        let adjustedData = [];
+        let extra = 0;
+
+        originalData.forEach(value => {
+            const ratio = value / total;
+            if (value > 0 && ratio < minRatio) {
+                const minValue = minRatio * total;
+                extra += (minValue - value);
+                adjustedData.push(minValue);
+            } else {
+                adjustedData.push(value);
+            }
+        });
+
+        const maxIndex = adjustedData.indexOf(Math.max(...adjustedData));
+        adjustedData[maxIndex] -= extra;
+
+        const ctx = document.getElementById('statusChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Visited', 'Not Visited'],
+                datasets: [{
+                    data: adjustedData,
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const value = originalData[context.dataIndex];
+                                const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${context.label}: ${value} (${percent}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}
+ *@
+
+
+@* 
+@using Model_New.ViewModels
+@model VisitStatusChartViewModel
+
+@{
+    ViewData["Title"] = "Visit Status Pie Chart";
+    var users = ViewBag.Users as List<SelectListItem>;
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Outlet Visit Status</h2>
+
+    <!-- Filter Form -->
+    <form method="get" asp-action="VisitStatusPieChart" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <select name="mrName" class="form-select" required>
+                <option value="">-- Select MR Name --</option>
+                @foreach (var user in users ?? new List<SelectListItem>())
+                {
+                    <option value="@user.Value" @(user.Value == (string)ViewBag.MrName ? "selected" : "")>
+                        @user.Text
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate" required />
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate" required />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100">Show Chart</button>
+        </div>
+    </form>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    }
+
+    @if (Model != null)
+    {
+        <div class="card shadow-lg p-4 rounded-4">
+            <div class="d-flex justify-content-center align-items-start flex-wrap gap-5">
+                <!-- RS Details -->
+                <div class="text-start" style="min-width: 260px;">
+                    <p class="mb-1 fw-bold text-muted">RS Code:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.RS_Code</p>
+
+                    <p class="mb-1 fw-bold text-muted">RS Name:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.RS_Name</p>
+
+                    <p class="mb-1 fw-bold text-muted">Region:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.Region</p>
+
+                    <p class="mb-1 fw-bold text-muted">Area:</p>
+                    <p class="mb-0 fs-5 text-dark">@Model.Area</p>
+                </div>
+
+                <!-- Chart -->
+                <div style="position: relative; width: 260px;">
+                    <canvas id="statusChart" height="260"></canvas>
+                    <div id="centerText"
+                         style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                text-align:center; font-weight:600; font-size:16px; line-height:1.4;">
+                        <div style="font-size:13px; color:#6c757d;">Total Outlet Count</div>
+                        <div style="font-size:22px; color:#000;">@Model.TotalCount</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Legend with Clickable Items -->
+            <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-white" data-index="0"
+                      style="background-color:#28a745; cursor:pointer;">Completed</span>
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-dark" data-index="1"
+                      style="background-color:#ffc107; cursor:pointer;">Visited</span>
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-white" data-index="2"
+                      style="background-color:#dc3545; cursor:pointer;">Not Visited</span>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+@if (Model != null)
+{
+    <script>
+        const originalData = [@Model.CompletedCount, @Model.VisitedCount, @Model.NotVisitedCount];
+        const total = originalData.reduce((a, b) => a + b, 0);
+        const minAngle = 3;
+        const minRatio = minAngle / 360;
+        const colors = ['#28a745', '#ffc107', '#dc3545'];
+
+        let adjustedData = [];
+        let extra = 0;
+
+        originalData.forEach(value => {
+            const ratio = value / total;
+            if (value > 0 && ratio < minRatio) {
+                const minValue = minRatio * total;
+                extra += (minValue - value);
+                adjustedData.push(minValue);
+            } else {
+                adjustedData.push(value);
+            }
+        });
+
+        const maxIndex = adjustedData.indexOf(Math.max(...adjustedData));
+        adjustedData[maxIndex] -= extra;
+
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Visited', 'Not Visited'],
+                datasets: [{
+                    data: adjustedData,
+                    backgroundColor: colors,
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                cutout: '70%',
+                responsive: true,
+                animation: {
+                    animateRotate: true,
+                    animateScale: true
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const value = originalData[context.dataIndex];
+                                const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${context.label}: ${value} (${percent}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Toggle dataset visibility on legend click
+        document.querySelectorAll('.legend-toggle').forEach(legend => {
+            legend.addEventListener('click', function () {
+                const index = parseInt(this.getAttribute('data-index'));
+                const meta = chart.getDatasetMeta(0);
+                const segment = meta.data[index];
+
+                segment.hidden = !segment.hidden;
+                chart.update();
+                this.classList.toggle('opacity-50');
+            });
+        });
+    </script>
+}
+ *@
+
+
+@* @using Model_New.ViewModels
+@model VisitStatusChartViewModel
+
+@{
+    ViewData["Title"] = "Visit Status Pie Chart";
+    var users = ViewBag.Users as List<SelectListItem>;
+}
+
+<div class="container mt-5" style="background-color: #f2f4f6; border-radius: 1rem; padding: 2rem;">
+    <h2 class="text-center mb-4">Outlet Visit Status</h2>
+
+    <!-- Filter Form -->
+    <form method="get" asp-action="VisitStatusPieChart" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <select name="mrName" class="form-select" required>
+                <option value="">-- Select MR Name --</option>
+                @foreach (var user in users ?? new List<SelectListItem>())
+                {
+                    <option value="@user.Value" @(user.Value == (string)ViewBag.MrName ? "selected" : "")>
+                        @user.Text
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate" required />
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate" required />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100">Show Chart</button>
+        </div>
+    </form>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    }
+
+    @if (Model != null)
+    {
+        <div class="card shadow-lg p-4 rounded-4" style="background-color: #ffffff;">
+            <div class="d-flex justify-content-center align-items-start flex-wrap gap-5">
+
+                <!-- RS Details -->
+                <div class="text-start" style="min-width: 260px;">
+                    <p class="mb-1 fw-bold text-muted">RS Code:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.RS_Code</p>
+
+                    <p class="mb-1 fw-bold text-muted">RS Name:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.RS_Name</p>
+
+                    <p class="mb-1 fw-bold text-muted">Region:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.Region</p>
+
+                    <p class="mb-1 fw-bold text-muted">Area:</p>
+                    <p class="mb-0 fs-5 text-dark">@Model.Area</p>
+                </div>
+
+                <!-- Chart -->
+                <div style="position: relative; width: 260px;">
+                    <canvas id="statusChart" height="260"></canvas>
+                    <div id="centerText"
+                         style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                                    text-align:center; font-weight:600; font-size:16px; line-height:1.4;">
+                        <div style="font-size:13px; color:#6c757d;">Total Outlet Count</div>
+                        <div style="font-size:22px; color:#000;">@Model.TotalCount</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend with Clickable Items -->
+            <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-white"
+                      data-index="0" style="background-color:#28a745; cursor:pointer; transition: all 0.3s;">
+                    Completed
+                </span>
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-dark"
+                      data-index="1" style="background-color:#ffc107; cursor:pointer; transition: all 0.3s;">
+                    Visited
+                </span>
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-white"
+                      data-index="2" style="background-color:#dc3545; cursor:pointer; transition: all 0.3s;">
+                    Not Visited
+                </span>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+@if (Model != null)
+{
+    <script>
+        const originalData = [@Model.CompletedCount, @Model.VisitedCount, @Model.NotVisitedCount];
+        const total = originalData.reduce((a, b) => a + b, 0);
+        const minAngle = 3;
+        const minRatio = minAngle / 360;
+        const colors = ['#28a745', '#ffc107', '#dc3545'];
+
+        let adjustedData = [];
+        let extra = 0;
+
+        originalData.forEach(value => {
+            const ratio = value / total;
+            if (value > 0 && ratio < minRatio) {
+                const minValue = minRatio * total;
+                extra += (minValue - value);
+                adjustedData.push(minValue);
+            } else {
+                adjustedData.push(value);
+            }
+        });
+
+        const maxIndex = adjustedData.indexOf(Math.max(...adjustedData));
+        adjustedData[maxIndex] -= extra;
+
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Visited', 'Not Visited'],
+                datasets: [{
+                    data: adjustedData,
+                    backgroundColor: colors,
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                cutout: '70%',
+                responsive: true,
+                animation: {
+                    animateRotate: true,
+                    animateScale: true
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const value = originalData[context.dataIndex];
+                                const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${context.label}: ${value} (${percent}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Toggle pie slice visibility
+        document.querySelectorAll('.legend-toggle').forEach(legend => {
+            legend.addEventListener('click', function () {
+                const index = parseInt(this.getAttribute('data-index'));
+                const meta = chart.getDatasetMeta(0);
+                const segment = meta.data[index];
+
+                segment.hidden = !segment.hidden;
+                chart.update();
+
+                // Toggle faded look on button
+                this.classList.toggle('opacity-50');
+            });
+        });
+    </script>
+}
+ *@
+
+@* @using Model_New.ViewModels
+@model VisitStatusChartViewModel
+
+@{
+    ViewData["Title"] = "Visit Status Pie Chart";
+    var users = ViewBag.Users as List<SelectListItem>;
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+
+    <style>
+        .select2-container--default .select2-selection--single {
+            height: 48px !important;
+            padding: 0.5rem 0.75rem;
+            font-size: 1.1rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .select2-container--default .select2-selection__rendered {
+            line-height: 1.5 !important;
+            font-size: 1.1rem !important;
+            padding-left: 0 !important;
+            padding-right: 20px !important;
+        }
+
+        .select2-selection__arrow {
+            height: 48px !important;
+            top: 0 !important;
+            right: 0 !important;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            font-size: 1.1rem;
+            padding: 6px 12px;
+            border-radius: 0.375rem;
+        }
+
+        .spinner-border {
+            z-index: 10;
+        }
+    </style>
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Outlet Visit Status</h2>
+
+    <form method="get" asp-action="VisitStatusPieChart" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <select id="mrCode" name="mrName" class="form-select" required>
+                <option value="">-- Select MR --</option>
+                @foreach (var user in users ?? new List<SelectListItem>())
+                {
+                    <option value="@user.Value" @(user.Value == (string)ViewBag.MrName ? "selected" : "")>
+                        @user.Text
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="text" id="monthStart" name="startDate" class="form-control" placeholder="Start Date" value="@ViewBag.StartDate" required />
+        </div>
+        <div class="col-md-3">
+            <input type="text" id="monthEnd" name="endDate" class="form-control" placeholder="End Date" value="@ViewBag.EndDate" required />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100">Show Chart</button>
+        </div>
+    </form>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    }
+
+    @if (Model != null)
+    {
+        <div class="card shadow-lg p-4 rounded-4" style="background-color:#f8f9fa;">
+            <div class="d-flex justify-content-center align-items-start flex-wrap gap-5">
+
+                <!-- RS Info -->
+                <div class="text-start" style="min-width: 260px;">
+                    <p class="mb-1 fw-bold text-muted">RS Code:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.RS_Code</p>
+
+                    <p class="mb-1 fw-bold text-muted">RS Name:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.RS_Name</p>
+
+                    <p class="mb-1 fw-bold text-muted">Region:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.Region</p>
+
+                    <p class="mb-1 fw-bold text-muted">Area:</p>
+                    <p class="mb-0 fs-5 text-dark">@Model.Area</p>
+                </div>
+
+                <!-- Chart Area -->
+                <div style="position: relative; width: 260px; background: #fff; padding: 20px; border-radius: 20px;">
+                    <div id="chartLoader" class="position-absolute top-50 start-50 translate-middle">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <canvas id="statusChart" height="260" style="visibility: hidden;"></canvas>
+                    <div id="centerText"
+                         style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                                 text-align:center; font-weight:600; font-size:16px; line-height:1.4;">
+                        <div style="font-size:13px; color:#6c757d;">Total Outlet Count</div>
+                        <div style="font-size:22px; color:#000;">@Model.TotalCount</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-white" data-index="0" style="background-color:#28a745; cursor:pointer;">Completed</span>
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-dark" data-index="1" style="background-color:#ffc107; cursor:pointer;">Visited</span>
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-white" data-index="2" style="background-color:#dc3545; cursor:pointer;">Not Visited</span>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#mrCode').select2({
+                width: '100%',
+                placeholder: '-- Select MR --',
+                allowClear: true,
+                minimumResultsForSearch: 10,
+                dropdownParent: $('#mrCode').parent()
+            });
+
+            flatpickr("#monthStart", { dateFormat: "Y-m-d", allowInput: true });
+            flatpickr("#monthEnd", { dateFormat: "Y-m-d", allowInput: true });
+        });
+
+        @if (Model != null)
+        {
+                <text>
+                    const originalData = [@Model.CompletedCount, @Model.VisitedCount, @Model.NotVisitedCount];
+                    const total = originalData.reduce((a, b) => a + b, 0);
+                    const minAngle = 3;
+                    const minRatio = minAngle / 360;
+                    const colors = ['#28a745', '#ffc107', '#dc3545'];
+
+                    let adjustedData = [];
+                    let extra = 0;
+
+                    originalData.forEach(value => {
+                        const ratio = value / total;
+                        if (value > 0 && ratio < minRatio) {
+                            const minValue = minRatio * total;
+                            extra += (minValue - value);
+                            adjustedData.push(minValue);
+                        } else {
+                            adjustedData.push(value);
+                        }
+                    });
+
+                    const maxIndex = adjustedData.indexOf(Math.max(...adjustedData));
+                    adjustedData[maxIndex] -= extra;
+
+                    const ctx = document.getElementById('statusChart').getContext('2d');
+                    const chart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Completed', 'Visited', 'Not Visited'],
+                            datasets: [{
+                                data: adjustedData,
+                                backgroundColor: colors,
+                                borderColor: '#ffffff',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            cutout: '70%',
+                            responsive: true,
+                            animation: {
+                                duration: 1200,
+                                easing: 'easeOutBounce',
+                                onComplete: () => {
+                                    document.getElementById("chartLoader").style.display = "none";
+                                    document.getElementById("statusChart").style.visibility = "visible";
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const value = originalData[context.dataIndex];
+                                            const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+                                            return `${context.label}: ${value} (${percent}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    document.querySelectorAll('.legend-toggle').forEach(legend => {
+                        legend.addEventListener('click', function () {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            const meta = chart.getDatasetMeta(0);
+                            const segment = meta.data[index];
+                            segment.hidden = !segment.hidden;
+                            chart.update();
+                            this.classList.toggle('opacity-50');
+                        });
+                    });
+                </text>
+        }
+    </script>
+} *@
+
+
+@* 
+@using Model_New.ViewModels
+@model VisitStatusChartViewModel
+
+@{
+    ViewData["Title"] = "Visit Status Pie Chart";
+    var users = ViewBag.Users as List<SelectListItem>;
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+    <style>
+        .select2-container--default .select2-selection--single {
+            height: 48px !important;
+            padding: 0.5rem 0.75rem;
+            font-size: 1.1rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .select2-container--default .select2-selection__rendered {
+            line-height: 1.5 !important;
+            font-size: 1.1rem !important;
+            padding-left: 0 !important;
+            padding-right: 20px !important;
+        }
+
+        .select2-selection__arrow {
+            height: 48px !important;
+            top: 0 !important;
+            right: 0 !important;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            font-size: 1.1rem;
+            padding: 6px 12px;
+            border-radius: 0.375rem;
+        }
+    </style>
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Outlet Visit Status</h2>
+
+    <!-- Filter Form -->
+    <form method="get" asp-action="VisitStatusPieChart" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <select id="mrCode" name="mrName" class="form-select" required>
+                <option value="">-- Select MR --</option>
+                @foreach (var user in users ?? new List<SelectListItem>())
+                {
+                    <option value="@user.Value" @(user.Value == (string)ViewBag.MrName ? "selected" : "")>
+                        @user.Text
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="text" id="monthStart" name="startDate" class="form-control" placeholder="Start Date" value="@ViewBag.StartDate" required />
+        </div>
+        <div class="col-md-3">
+            <input type="text" id="monthEnd" name="endDate" class="form-control" placeholder="End Date" value="@ViewBag.EndDate" required />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100">Show Chart</button>
+        </div>
+    </form>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    }
+
+    @if (Model != null)
+    {
+        <div class="card shadow-lg p-4 rounded-4">
+            <div class="d-flex justify-content-center align-items-start flex-wrap gap-5">
+                <!-- RS Details -->
+                <div class="text-start" style="min-width: 260px;">
+                    <p class="mb-1 fw-bold text-muted">RS Code:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.RS_Code</p>
+
+                    <p class="mb-1 fw-bold text-muted">RS Name:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.RS_Name</p>
+
+                    <p class="mb-1 fw-bold text-muted">Region:</p>
+                    <p class="mb-2 fs-5 text-dark">@Model.Region</p>
+
+                    <p class="mb-1 fw-bold text-muted">Area:</p>
+                    <p class="mb-0 fs-5 text-dark">@Model.Area</p>
+                </div>
+
+                <!-- Chart -->
+                <div style="position: relative; width: 260px;">
+                    <canvas id="statusChart" height="260"></canvas>
+                    <div id="centerText"
+                         style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                                 text-align:center; font-weight:600; font-size:16px; line-height:1.4;">
+                        <div style="font-size:13px; color:#6c757d;">Total Outlet Count</div>
+                        <div style="font-size:22px; color:#000;">@Model.TotalCount</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend with Clickable Items -->
+            <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-white" data-index="0" style="background-color:#28a745; cursor:pointer;">Completed</span>
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-dark" data-index="1" style="background-color:#ffc107; cursor:pointer;">Visited</span>
+                <span class="legend-toggle badge rounded-pill px-4 py-2 text-white" data-index="2" style="background-color:#dc3545; cursor:pointer;">Not Visited</span>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#mrCode').select2({
+                width: '100%',
+                placeholder: '-- Select MR --',
+                allowClear: true,
+                minimumResultsForSearch: 10,
+                dropdownParent: $('#mrCode').parent()
+            });
+
+            flatpickr("#monthStart", { dateFormat: "Y-m-d", allowInput: true });
+            flatpickr("#monthEnd", { dateFormat: "Y-m-d", allowInput: true });
+        });
+
+        @if (Model != null)
+        {
+                <text>
+                    const originalData = [@Model.CompletedCount, @Model.VisitedCount, @Model.NotVisitedCount];
+                    const total = originalData.reduce((a, b) => a + b, 0);
+                    const minAngle = 3;
+                    const minRatio = minAngle / 360;
+                    const colors = ['#28a745', '#ffc107', '#dc3545'];
+
+                    let adjustedData = [];
+                    let extra = 0;
+
+                    originalData.forEach(value => {
+                        const ratio = value / total;
+                        if (value > 0 && ratio < minRatio) {
+                            const minValue = minRatio * total;
+                            extra += (minValue - value);
+                            adjustedData.push(minValue);
+                        } else {
+                            adjustedData.push(value);
+                        }
+                    });
+
+                    const maxIndex = adjustedData.indexOf(Math.max(...adjustedData));
+                    adjustedData[maxIndex] -= extra;
+
+                    const ctx = document.getElementById('statusChart').getContext('2d');
+                    const chart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Completed', 'Visited', 'Not Visited'],
+                            datasets: [{
+                                data: adjustedData,
+                                backgroundColor: colors,
+                                borderColor: '#ffffff',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            cutout: '70%',
+                            responsive: true,
+                            animation: {
+                                animateRotate: true,
+                                animateScale: true
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const value = originalData[context.dataIndex];
+                                            const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+                                            return `${context.label}: ${value} (${percent}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    color: '#000',
+                                    font: { weight: 'bold', size: 12 },
+                                    formatter: function (value, context) {
+                                        const val = originalData[context.dataIndex];
+                                        const percent = total ? ((val / total) * 100).toFixed(1) : 0;
+                                        return percent > 0 ? `${percent}%` : '';
+                                    },
+                                    anchor: 'end',
+                                    align: 'end',
+                                    offset: 12,
+                                    borderRadius: 4,
+                                    backgroundColor: 'rgba(255,255,255,0.8)',
+                                    borderColor: '#ccc',
+                                    borderWidth: 1,
+                                    padding: 4,
+                                    clamp: true
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
+
+                    document.querySelectorAll('.legend-toggle').forEach(legend => {
+                        legend.addEventListener('click', function () {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            const meta = chart.getDatasetMeta(0);
+                            const segment = meta.data[index];
+                            segment.hidden = !segment.hidden;
+                            chart.update();
+                            this.classList.toggle('opacity-50');
+                        });
+                    });
+                </text>
+        }
+    </script>
+} *@
+
+@* 
+@using Model_New.ViewModels
+@model VisitStatusChartViewModel
+
+@{
+    ViewData["Title"] = "Visit Status Pie Chart";
+    var users = ViewBag.Users as List<SelectListItem>;
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --warning-color: #f8961e;
+            --danger-color: #f94144;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2b2d42;
+            --text-light: #8d99ae;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            }
+
+        h2 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-block;
+        }
+
+            h2:after {
+                content: '';
+                position: absolute;
+                bottom: -10px;
+                left: 0;
+                width: 60px;
+                height: 4px;
+                background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+                border-radius: 2px;
+            }
+
+        .form-control, .form-select {
+            height: 48px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+            }
+
+        .btn-success {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+            .btn-success:hover {
+                background-color: var(--secondary-color);
+                transform: translateY(-2px);
+            }
+
+        .select2-container--default .select2-selection--single {
+            height: 48px !important;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #e0e0e0 !important;
+            border-radius: 8px !important;
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .select2-container--default .select2-selection__rendered {
+            line-height: 1.5 !important;
+            font-size: 1rem !important;
+            padding-left: 0 !important;
+            padding-right: 20px !important;
+            color: var(--text-dark) !important;
+        }
+
+        .select2-selection__arrow {
+            height: 48px !important;
+            top: 0 !important;
+            right: 0 !important;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            font-size: 1rem;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .badge {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+            .badge:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+
+        .legend-toggle {
+            transition: all 0.3s;
+        }
+
+            .legend-toggle:hover {
+                opacity: 0.9;
+                transform: scale(1.05);
+            }
+
+            .legend-toggle.opacity-50 {
+                opacity: 0.5;
+            }
+
+        #centerText {
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+            #centerText div:first-child {
+                color: var(--text-light);
+                font-size: 0.9rem;
+            }
+
+            #centerText div:last-child {
+                font-size: 1.8rem;
+                color: var(--primary-color);
+            }
+
+        .alert {
+            border-radius: 8px;
+        }
+
+        .rs-details p {
+            margin-bottom: 0.5rem;
+        }
+
+            .rs-details p.fw-bold {
+                color: var(--text-light);
+                font-size: 0.9rem;
+            }
+
+            .rs-details p.fs-5 {
+                font-size: 1.1rem !important;
+                font-weight: 500;
+                color: var(--text-dark);
+            }
+
+        .chart-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+        }
+
+        .filter-form {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Outlet Visit Status Analytics</h2>
+
+    <!-- Filter Form -->
+    <div class="filter-form">
+        <form method="get" asp-action="VisitStatusPieChart" class="row g-3">
+            <div class="col-md-4">
+                <select id="mrCode" name="mrName" class="form-select" required>
+                    <option value="">-- Select MR --</option>
+                    @foreach (var user in users ?? new List<SelectListItem>())
+                    {
+                        <option value="@user.Value" @(user.Value == (string)ViewBag.MrName ? "selected" : "")>
+                            @user.Text
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="monthStart" name="startDate" class="form-control" placeholder="Start Date" value="@ViewBag.StartDate" required />
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="monthEnd" name="endDate" class="form-control" placeholder="End Date" value="@ViewBag.EndDate" required />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="fas fa-chart-pie me-2"></i> Generate
+                </button>
+            </div>
+        </form>
+    </div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model != null)
+    {
+        <div class="card shadow-lg p-4">
+            <div class="d-flex justify-content-center align-items-start flex-wrap gap-5">
+                <!-- RS Details -->
+                <div class="text-start rs-details" style="min-width: 260px;">
+                    <p class="mb-1 fw-bold">RS Code:</p>
+                    <p class="mb-3 fs-5">@Model.RS_Code</p>
+
+                    <p class="mb-1 fw-bold">RS Name:</p>
+                    <p class="mb-3 fs-5">@Model.RS_Name</p>
+
+                    <p class="mb-1 fw-bold">Region:</p>
+                    <p class="mb-3 fs-5">@Model.Region</p>
+
+                    <p class="mb-1 fw-bold">Area:</p>
+                    <p class="mb-0 fs-5">@Model.Area</p>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-container">
+                    <canvas id="statusChart" height="260"></canvas>
+                    <div id="centerText"
+                         style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                                     text-align:center; font-weight:600; line-height:1.4;">
+                        <div>Total Outlet Count</div>
+                        <div>@Model.TotalCount</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend with Clickable Items -->
+            <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                <span class="legend-toggle badge" data-index="0" style="background-color:#4cc9f0; cursor:pointer;">
+                    <i class="fas fa-check-circle me-1"></i> Completed
+                </span>
+                <span class="legend-toggle badge" data-index="1" style="background-color:#f8961e; cursor:pointer;">
+                    <i class="fas fa-map-marker-alt me-1"></i> Visited
+                </span>
+                <span class="legend-toggle badge" data-index="2" style="background-color:#f94144; cursor:pointer;">
+                    <i class="fas fa-times-circle me-1"></i> Not Visited
+                </span>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#mrCode').select2({
+                width: '100%',
+                placeholder: '-- Select MR --',
+                allowClear: true,
+                minimumResultsForSearch: 10,
+                dropdownParent: $('#mrCode').parent()
+            });
+
+            flatpickr("#monthStart", {
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                defaultDate: "@ViewBag.StartDate"
+            });
+
+            flatpickr("#monthEnd", {
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                defaultDate: "@ViewBag.EndDate"
+            });
+        });
+
+        @if (Model != null)
+        {
+                <text>
+                    const originalData = [@Model.CompletedCount, @Model.VisitedCount, @Model.NotVisitedCount];
+                    const total = originalData.reduce((a, b) => a + b, 0);
+                    const minAngle = 3;
+                    const minRatio = minAngle / 360;
+                    const colors = ['#4cc9f0', '#f8961e', '#f94144'];
+                    const hoverColors = ['#3aa8d8', '#e0871a', '#e03134'];
+
+                    let adjustedData = [];
+                    let extra = 0;
+
+                    originalData.forEach(value => {
+                        const ratio = value / total;
+                        if (value > 0 && ratio < minRatio) {
+                            const minValue = minRatio * total;
+                            extra += (minValue - value);
+                            adjustedData.push(minValue);
+                        } else {
+                            adjustedData.push(value);
+                        }
+                    });
+
+                    const maxIndex = adjustedData.indexOf(Math.max(...adjustedData));
+                    adjustedData[maxIndex] -= extra;
+
+                    const ctx = document.getElementById('statusChart').getContext('2d');
+                    const chart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Completed', 'Visited', 'Not Visited'],
+                            datasets: [{
+                                data: adjustedData,
+                                backgroundColor: colors,
+                                borderColor: '#ffffff',
+                                borderWidth: 2,
+                                hoverBackgroundColor: hoverColors,
+                                hoverBorderWidth: 3
+                            }]
+                        },
+                        options: {
+                            cutout: '70%',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            animation: {
+                                animateRotate: true,
+                                animateScale: true,
+                                duration: 1000
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    titleFont: { size: 14, weight: 'bold' },
+                                    bodyFont: { size: 12 },
+                                    callbacks: {
+                                        label: function (context) {
+                                            const value = originalData[context.dataIndex];
+                                            const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+                                            return `${context.label}: ${value} (${percent}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    color: '#fff',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 11
+                                    },
+                                    formatter: function (value, context) {
+                                        const val = originalData[context.dataIndex];
+                                        const percent = total ? ((val / total) * 100).toFixed(1) : 0;
+                                        return percent > 5 ? `${percent}%` : '';
+                                    },
+                                    anchor: 'end',
+                                    align: 'end',
+                                    offset: 5,
+                                    borderRadius: 4,
+                                    backgroundColor: function(context) {
+                                        return colors[context.dataIndex];
+                                    },
+                                    borderColor: '#fff',
+                                    borderWidth: 1,
+                                    padding: 4,
+                                    textAlign: 'center'
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
+
+                    document.querySelectorAll('.legend-toggle').forEach(legend => {
+                        legend.addEventListener('click', function () {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            const meta = chart.getDatasetMeta(0);
+                            const segment = meta.data[index];
+                            segment.hidden = segment.hidden === null ? !chart.getDatasetMeta(0).data[index].hidden : null;
+                            chart.update();
+                            this.classList.toggle('opacity-50');
+                        });
+                    });
+                </text>
+        }
+    </script>
+}
+ *@
+
+@using Model_New.ViewModels
+@model VisitStatusChartViewModel
+
+@{
+    ViewData["Title"] = "Visit Status Pie Chart";
+    var users = ViewBag.Users as List<SelectListItem>;
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --warning-color: #f8961e;
+            --danger-color: #f94144;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2b2d42;
+            --text-light: #8d99ae;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            }
+
+        h2 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-block;
+        }
+
+            h2:after {
+                content: '';
+                position: absolute;
+                bottom: -10px;
+                left: 0;
+                width: 60px;
+                height: 4px;
+                background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+                border-radius: 2px;
+            }
+
+        .form-control, .form-select {
+            height: 48px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+            }
+
+        .btn-success {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+            .btn-success:hover {
+                background-color: var(--secondary-color);
+                transform: translateY(-2px);
+            }
+
+        .select2-container--default .select2-selection--single {
+            height: 48px !important;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #e0e0e0 !important;
+            border-radius: 8px !important;
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .select2-container--default .select2-selection__rendered {
+            line-height: 1.5 !important;
+            font-size: 1rem !important;
+            padding-left: 0 !important;
+            padding-right: 20px !important;
+            color: var(--text-dark) !important;
+        }
+
+        .select2-selection__arrow {
+            height: 48px !important;
+            top: 0 !important;
+            right: 0 !important;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            font-size: 1rem;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .badge {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+            .badge:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+
+        .legend-toggle {
+            transition: all 0.3s;
+        }
+
+            .legend-toggle:hover {
+                opacity: 0.9;
+                transform: scale(1.05);
+            }
+
+            .legend-toggle.opacity-50 {
+                opacity: 0.5;
+            }
+
+        #centerText {
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+            #centerText div:first-child {
+                color: var(--text-light);
+                font-size: 0.9rem;
+            }
+
+            #centerText div:last-child {
+                font-size: 1.8rem;
+                color: var(--primary-color);
+            }
+
+        .alert {
+            border-radius: 8px;
+        }
+
+        .rs-details p {
+            margin-bottom: 0.5rem;
+        }
+
+            .rs-details p.fw-bold {
+                color: var(--text-light);
+                font-size: 0.9rem;
+            }
+
+            .rs-details p.fs-5 {
+                font-size: 1.1rem !important;
+                font-weight: 500;
+                color: var(--text-dark);
+            }
+
+        .chart-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+        }
+
+        .filter-form {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+    </style>
+}
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Outlet Visit Status Analytics</h2>
+
+    <!-- Filter Form -->
+    <div class="filter-form">
+        <form method="get" asp-action="VisitStatusPieChart" class="row g-3">
+            <div class="col-md-4">
+                <select id="mrCode" name="mrName" class="form-select" required>
+                    <option value="">-- Select MR --</option>
+                    @foreach (var user in users ?? new List<SelectListItem>())
+                    {
+                        <option value="@user.Value" @(user.Value == (string)ViewBag.MrName ? "selected" : "")>
+                            @user.Text
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="monthStart" name="startDate" class="form-control" placeholder="Start Date" value="@ViewBag.StartDate" required />
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="monthEnd" name="endDate" class="form-control" placeholder="End Date" value="@ViewBag.EndDate" required />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="fas fa-chart-pie me-2"></i> Generate
+                </button>
+            </div>
+        </form>
+    </div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model != null)
+    {
+        <div class="card shadow-lg p-4">
+            <div class="d-flex justify-content-center align-items-start flex-wrap gap-5">
+                <!-- RS Details -->
+                <div class="text-start rs-details" style="min-width: 260px;">
+                    <p class="mb-1 fw-bold">RS Code:</p>
+                    <p class="mb-3 fs-5">@Model.RS_Code</p>
+
+                    <p class="mb-1 fw-bold">RS Name:</p>
+                    <p class="mb-3 fs-5">@Model.RS_Name</p>
+
+                    <p class="mb-1 fw-bold">Region:</p>
+                    <p class="mb-3 fs-5">@Model.Region</p>
+
+                    <p class="mb-1 fw-bold">Area:</p>
+                    <p class="mb-0 fs-5">@Model.Area</p>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-container">
+                    <canvas id="statusChart" height="260"></canvas>
+                    <div id="centerText"
+                         style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                                     text-align:center; font-weight:600; line-height:1.4;">
+                        <div>Total Outlet Count</div>
+                        <div>@Model.TotalCount</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend with Clickable Items -->
+            <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                <span class="legend-toggle badge" data-index="0" style="background-color:#4cc9f0; cursor:pointer;">
+                    <i class="fas fa-check-circle me-1"></i> Completed
+                </span>
+                <span class="legend-toggle badge" data-index="1" style="background-color:#f8961e; cursor:pointer;">
+                    <i class="fas fa-map-marker-alt me-1"></i> Visited
+                </span>
+                <span class="legend-toggle badge" data-index="2" style="background-color:#f94144; cursor:pointer;">
+                    <i class="fas fa-times-circle me-1"></i> Not Visited
+                </span>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#mrCode').select2({
+                width: '100%',
+                placeholder: '-- Select MR --',
+                allowClear: true,
+                minimumResultsForSearch: 10,
+                dropdownParent: $('#mrCode').parent()
+            });
+
+            flatpickr("#monthStart", {
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                defaultDate: "@ViewBag.StartDate"
+            });
+
+            flatpickr("#monthEnd", {
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                defaultDate: "@ViewBag.EndDate"
+            });
+        });
+
+        @if (Model != null)
+        {
+                <text>
+                    const originalData = [@Model.CompletedCount, @Model.VisitedCount, @Model.NotVisitedCount];
+                    const total = originalData.reduce((a, b) => a + b, 0);
+                    const minAngle = 3;
+                    const minRatio = minAngle / 360;
+                    const colors = ['#4cc9f0', '#f8961e', '#f94144'];
+                    const hoverColors = ['#3aa8d8', '#e0871a', '#e03134'];
+
+                    let adjustedData = [];
+                    let extra = 0;
+
+                    originalData.forEach(value => {
+                        const ratio = value / total;
+                        if (value > 0 && ratio < minRatio) {
+                            const minValue = minRatio * total;
+                            extra += (minValue - value);
+                            adjustedData.push(minValue);
+                        } else {
+                            adjustedData.push(value);
+                        }
+                    });
+
+                    const maxIndex = adjustedData.indexOf(Math.max(...adjustedData));
+                    adjustedData[maxIndex] -= extra;
+
+                    const ctx = document.getElementById('statusChart').getContext('2d');
+                    const chart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Completed', 'Visited', 'Not Visited'],
+                            datasets: [{
+                                data: adjustedData,
+                                backgroundColor: colors,
+                                borderColor: '#ffffff',
+                                borderWidth: 2,
+                                hoverBackgroundColor: hoverColors,
+                                hoverBorderWidth: 3
+                            }]
+                        },
+                        options: {
+                            cutout: '70%',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            animation: {
+                                animateRotate: true,
+                                animateScale: true,
+                                duration: 1000
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    titleFont: { size: 14, weight: 'bold' },
+                                    bodyFont: { size: 12 },
+                                    callbacks: {
+                                        label: function (context) {
+                                            const value = originalData[context.dataIndex];
+                                            const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+                                            return `${context.label}: ${value} (${percent}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    color: '#fff',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 11
+                                    },
+                                    formatter: function (value, context) {
+                                        const val = originalData[context.dataIndex];
+                                        const percent = total ? ((val / total) * 100).toFixed(1) : 0;
+                                        return percent > 5 ? `${percent}%` : '';
+                                    },
+                                    anchor: 'end',
+                                    align: 'end',
+                                    offset: 5,
+                                    borderRadius: 4,
+                                    backgroundColor: function(context) {
+                                        return colors[context.dataIndex];
+                                    },
+                                    borderColor: '#fff',
+                                    borderWidth: 1,
+                                    padding: 4,
+                                    textAlign: 'center'
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
+
+                    document.querySelectorAll('.legend-toggle').forEach(legend => {
+                        legend.addEventListener('click', function () {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            const meta = chart.getDatasetMeta(0);
+                            const segment = meta.data[index];
+                            segment.hidden = segment.hidden === null ? !chart.getDatasetMeta(0).data[index].hidden : null;
+                            chart.update();
+                            this.classList.toggle('opacity-50');
+                        });
+                    });
+                </text>
+        }
+    </script>
+}
+
+
+

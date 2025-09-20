@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+
+    <!-- Styles -->
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap-icons-1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="~/lib/leaflet-routing-machine/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="~/lib/icons-Main/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/lib/bootstrap_file/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap_file/css/buttons.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="~/Images/R (1).png" alt="Logo">
+                <div class="brand-text">
+                    <h1 class="fw-bold">Merchandiser App</h1>
+                    <p class="lead">Your merchandising solution</p>
+                </div>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <i class="bi bi-list"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                @Html.Partial("_Navbar")   @* 👉 all nav logic is now in _Navbar.cshtml *@
+            </div>
+        </div>
+    </nav>
+
+    <div class="container content-container">
+        @RenderBody()
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/popper.js/umd/popper.min.js"></script>
+    <script src="~/lib/leaflet/leaflet.js"></script>
+    <script src="~/lib/leaflet-routing-machine/leaflet-routing-machine.js"></script>
+    <script src="~/lib/bootstrap_file/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/bootstrap_file/js/dataTables.buttons.min.js"></script>
+    <script src="~/lib/bootstrap_file/js/jszip.min.js"></script>
+    <script src="~/lib/bootstrap_file/js/buttons.html5.min.js"></script>
+    <script src="~/lib/bootstrap_file/js/sweetalert2@11.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if auth cookie exists but still on login page
+            if (document.cookie.includes('MRApp.Auth') &&
+                window.location.pathname.includes('/Login')) {
+                // Force full page reload to let server handle redirect
+                window.location.href = '/';
+            }
+
+            // Activity tracking configuration
+            const ACTIVITY_ENDPOINT = '/Login/UpdateActivity';
+            const THROTTLE_TIME = 18000000; // 5 hours between server updates
+            const csrfToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            // Activity update function
+            const updateActivity = () => {
+                fetch(ACTIVITY_ENDPOINT, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: csrfToken ? {
+                        'RequestVerificationToken': csrfToken,
+                        'Content-Type': 'application/json'
+                    } : {}
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Update failed');
+                    return response.json();
+                })
+                .catch(error => console.error('Update failed:', error));
+            };
+
+            // Throttle function
+            const throttle = (func, limit) => {
+                let lastFunc;
+                let lastRan;
+                return function() {
+                    const context = this;
+                    const args = arguments;
+                    if (!lastRan) {
+                        func.apply(context, args);
+                        lastRan = Date.now();
+                    } else {
+                        clearTimeout(lastFunc);
+                        lastFunc = setTimeout(function() {
+                            if ((Date.now() - lastRan) >= limit) {
+                                func.apply(context, args);
+                                lastRan = Date.now();
+                            }
+                        }, limit - (Date.now() - lastRan));
+                    }
+                };
+            };
+
+            // Create throttled version
+            const throttledUpdate = throttle(updateActivity, THROTTLE_TIME);
+
+            // Event listeners with passive mode for better performance
+            const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+            events.forEach(event => {
+                document.addEventListener(event, throttledUpdate, { passive: true });
+            });
+
+            // Initial update
+            updateActivity();
+        });
+    </script>
+
+
+    @RenderSection("Scripts", required: false)
+    @RenderSection("Styles", required: false)
+</body>
+</html>

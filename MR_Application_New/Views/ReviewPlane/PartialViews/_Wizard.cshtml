@@ -1,0 +1,226 @@
+﻿
+
+
+
+@{
+    ViewData["Title"] = "Wizard Assignment";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-lg-11 col-xl-9">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h1>Review Wizard</h1>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Welcome to the solution of the Review Wizard.</p>
+            </div>
+            <div class="card-footer text-right">
+             
+
+                <form id="geoForm" method="post" action="/ReviewPlane/ReviewPlane">
+                    <input type="hidden" name="Latitude" id="Latitude" />
+                    <input type="hidden" name="Longitude" id="Longitude" />
+                    <input type="hidden" name="DeviceInfo" id="DeviceInfo" />
+                    <input type="hidden" name="DeviceType" id="DeviceType" />
+
+                    <input type="hidden" name="SkippedGeo" id="SkippedGeo" value="false" />  <!-- NEW -->
+
+
+                    <button type="button" id="startReviewBtn" class="btn btn-primary">
+                        Start Review
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+
+
+<script>
+    document.getElementById("startReviewBtn").addEventListener("click", function () {
+        const preVisitGuid = localStorage.getItem("preVisitGuid");
+        const currentReviewId = localStorage.getItem("currentReviewId");
+        const version = Date.now(); // cache buster
+
+        // 1️⃣ Direct submit if BOTH values are empty - start geo capture immediately
+        if (!preVisitGuid && !currentReviewId) {
+            startGeoCapture(); // Start geo capture first
+            return; // Don't proceed further
+        }
+
+        // 2️⃣ Resume / check server (only if we have at least one value)
+        fetch(`/ReviewPlane/CheckReviewExists?preVisitGuid=${preVisitGuid}&currentReviewId=${currentReviewId}`)
+            .then(res => res.json())
+            .then(data => {
+
+                // Helper to clear localStorage
+                const clearLocalStorage = () => {
+                    localStorage.removeItem("preVisitGuid");
+                    localStorage.removeItem("currentReviewId");
+                };
+
+                // Helper to call MoveToTrackLog
+                const moveToTrackLog = () => {
+                    const reviewId = currentReviewId ? encodeURIComponent(currentReviewId) : "null";
+                    const rowGuid = preVisitGuid ? encodeURIComponent(preVisitGuid) : "null";
+
+                    return fetch(`/ReviewPlane/MoveToTrackLog?reviewId=${reviewId}&rowGuid=${rowGuid}`, {
+                        method: 'POST'
+                    })
+                    .then(res => res.json())
+                    .then(resp => {
+                        if (resp && resp.success) {
+                            clearLocalStorage();
+                            // After moving to track log, start fresh with geo capture
+                            startGeoCapture();
+                        } else {
+                            Swal.fire("Error", "Failed to move data to track log.", "error");
+                        }
+                    })
+                    .catch(() => Swal.fire("Error", "Failed to move data to track log.", "error"));
+                };
+
+                // Helper to skip geo capture and submit form
+                const skipGeoAndSubmit = () => {
+                    document.getElementById("Latitude").value = "0";
+                    document.getElementById("Longitude").value = "0";
+                    document.getElementById("DeviceInfo").value = "Skipped";
+                    document.getElementById("DeviceType").value = "Skipped";
+                    document.getElementById("SkippedGeo").value = "true";
+                    document.getElementById("geoForm").submit();
+                };
+
+                // 2a. Only review exists → OutletView (ask before redirect)
+                if (data.exists && data.outletView) {
+                    Swal.fire({
+                        title: "Resume review?",
+                        text: "A review exists. Click Yes to go to Outlet View.",
+                        icon: "question",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes",
+                        cancelButtonText: "No"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/StoreVisit/OutletView?reviewId=' +
+                                encodeURIComponent(data.reviewId) + '&_=' + version;
+                        } else {
+                            moveToTrackLog();
+                        }
+                    });
+                    return;
+                }
+
+                // 2b. Both review & TblStoreVisitAnswer exist → PostVisit (ask before redirect)
+                if (data.exists && data.channelType) {
+                    Swal.fire({
+                        title: "Resume review?",
+                        text: "A review exists with answers. Click Yes to continue to PostVisit.",
+                        icon: "question",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes",
+                        cancelButtonText: "No"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/StoreVisit/PostVisit?ChannelType=' +
+                                encodeURIComponent(data.channelType) + '&_=' + version;
+                        } else {
+                            moveToTrackLog();
+                        }
+                    });
+                    return;
+                }
+
+                // 2c. Neither → show popup for fresh start
+                Swal.fire({
+                    title: "Do you want to start/resume the review?",
+                    text: "Click Yes to continue without location or No to capture location.",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes",
+                    cancelButtonText: "No"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        skipGeoAndSubmit(); // Skip geo and submit form
+                    } else {
+                        moveToTrackLog();
+                    }
+                });
+
+            })
+            .catch(() => Swal.fire("Error", "Failed to check review status.", "error"));
+    });
+
+    function getDeviceType() {
+        const ua = navigator.userAgent;
+        if (/Mobi|Android|iPhone|iPad|iPod|Tablet|IEMobile|Mobile/i.test(ua)) {
+            if (/Tablet|iPad/i.test(ua)) return "Tablet";
+            else return "Mobile";
+        }
+        return "Desktop";
+    }
+
+    function startGeoCapture() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    document.getElementById("Latitude").value = position.coords.latitude;
+                    document.getElementById("Longitude").value = position.coords.longitude;
+                    document.getElementById("DeviceInfo").value = navigator.userAgent;
+                    document.getElementById("DeviceType").value = getDeviceType();
+                    document.getElementById("geoForm").submit();
+                },
+                function (error) {
+                    // If geo location fails, ask user if they want to skip
+                    Swal.fire({
+                        title: "Location Access Denied",
+                        text: "Do you want to continue without location?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, Continue",
+                        cancelButtonText: "No, Try Again"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById("Latitude").value = "0";
+                            document.getElementById("Longitude").value = "0";
+                            document.getElementById("DeviceInfo").value = navigator.userAgent;
+                            document.getElementById("DeviceType").value = getDeviceType();
+                            document.getElementById("SkippedGeo").value = "true";
+                            document.getElementById("geoForm").submit();
+                        } else {
+                            // User wants to try again
+                            startGeoCapture();
+                        }
+                    });
+                }
+            );
+        } else {
+            // Geolocation not supported
+            Swal.fire({
+                title: "Geolocation Not Supported",
+                text: "Do you want to continue without location?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Continue",
+                cancelButtonText: "No"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById("Latitude").value = "0";
+                    document.getElementById("Longitude").value = "0";
+                    document.getElementById("DeviceInfo").value = navigator.userAgent;
+                    document.getElementById("DeviceType").value = getDeviceType();
+                    document.getElementById("SkippedGeo").value = "true";
+                    document.getElementById("geoForm").submit();
+                }
+            });
+        }
+    }
+</script>

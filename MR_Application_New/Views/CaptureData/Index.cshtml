@@ -1,0 +1,113 @@
+﻿@using Model_New
+
+@model     PaginatedList<Model_New.Models.Tbl_capturedata_log>
+
+@{
+    ViewData["Title"] = "Captured Data";
+}
+
+<h2>Captured Data</h2>
+
+@if (ViewData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @ViewData["ErrorMessage"]
+    </div>
+}
+
+<!-- Search Form -->
+<form method="get">
+    <div class="row">
+        <div class="col-md-3">
+            <label>Sr Code:</label>
+            <input type="text" name="srCode" class="form-control" value="@Context.Request.Query["srCode"]" />
+        </div>
+        <div class="col-md-3">
+            <label>Sr Code Name:</label>
+            <input type="text" name="srCodeName" class="form-control" value="@Context.Request.Query["srCodeName"]" />
+        </div>
+        <div class="col-md-3">
+            <label>MR ID:</label>
+            <input type="text" name="mrId" class="form-control" value="@Context.Request.Query["mrId"]" />
+        </div>
+        <div class="col-md-3">
+            <label>MR Emp No:</label>
+            <input type="text" name="mrEmpNo" class="form-control" value="@Context.Request.Query["mrEmpNo"]" />
+        </div>
+        <div class="col-md-3">
+            <label>From Date:</label>
+            <input type="date" name="fromDate" class="form-control" value="@Context.Request.Query["fromDate"]" />
+        </div>
+        <div class="col-md-3">
+            <label>To Date:</label>
+            <input type="date" name="toDate" class="form-control" value="@Context.Request.Query["toDate"]" />
+        </div>
+        <div class="col-md-3 align-self-end">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </div>
+</form>
+
+<!-- Data Table -->
+@if (Model != null && Model.Count > 0)
+{
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Rscode</th>
+                <th>MrCode</th>
+                <th>Outlet</th>
+                <th>Outlet Type</th>
+                <th>Uploaded At</th>
+                <th>Sr Code</th>
+                <th>Sr Code Name</th>
+                <th>MR ID</th>
+                <th>MR Emp No</th>
+                <th>Image</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Rscode</td>
+                    <td>@item.MrCode</td>
+                    <td>@item.Outlet</td>
+                    <td>@item.OutletType</td>
+                    <td>@item.UploadedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>@item.SrCode</td>
+                    <td>@item.SrCodeName</td>
+                    <td>@item.MRID</td>
+                    <td>@item.MREmpNo</td>
+                    <td>
+                        @if (item.CapturedPhoto != null && item.CapturedPhoto.Length > 0)
+                        {
+                            <img src="data:image/png;base64,@Convert.ToBase64String(item.CapturedPhoto)" alt="Captured Image" width="100" height="100" />
+                        }
+                        else
+                        {
+                            <span>No Image</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div>
+        @if (Model.HasPreviousPage)
+        {
+            <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)" class="btn btn-secondary">Previous</a>
+        }
+        Page @Model.PageIndex of @Model.TotalPages
+        @if (Model.HasNextPage)
+        {
+            <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)" class="btn btn-secondary">Next</a>
+        }
+    </div>
+}
+else
+{
+    <p class="text-warning mt-3">No data available.</p>
+}
