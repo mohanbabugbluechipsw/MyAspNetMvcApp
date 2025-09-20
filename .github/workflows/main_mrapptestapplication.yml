@@ -18,7 +18,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'  # change if using 7.0 or 6.0
+          dotnet-version: '8.0.x'  # adjust if using another version
 
       # Step 3: Restore dependencies
       - name: Restore dependencies
@@ -36,7 +36,7 @@ jobs:
       - name: Create appsettings.json
         shell: pwsh
         run: |
-          @'
+@'
 {
   "ConnectionStrings": { "DefaultConnection": "${{ secrets.SQL_DEFAULT_CONNECTION }}" },
   "AzureCommunicationServices": {
@@ -67,7 +67,7 @@ jobs:
 }
 '@ | Out-File -FilePath ./publish/appsettings.json -Encoding utf8
 
-      # Step 7: Deploy to Azure App Service
+      # Step 7: Deploy to Azure Web App
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
         with:
