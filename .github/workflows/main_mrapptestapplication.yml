@@ -10,57 +10,67 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Setup .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.x' # change if using 7.0 or 6.0
 
+      # Step 3: Restore dependencies
       - name: Restore dependencies
         run: dotnet restore
 
+      # Step 4: Build the project
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
+      # Step 5: Publish the project
       - name: Publish
         run: dotnet publish -c Release -o ./publish
 
+      # Step 6: Create appsettings.json dynamically using GitHub Secrets
       - name: Create appsettings.json
+        shell: pwsh
         run: |
-          echo "{
-            \"ConnectionStrings\": { \"DefaultConnection\": \"${{ secrets.SQL_DEFAULT_CONNECTION }}\" },
-            \"AzureCommunicationServices\": {
-              \"ConnectionString\": \"${{ secrets.AZURE_COMM_CONNECTION }}\",
-              \"SenderAddress\": \"${{ secrets.AZURE_COMM_SENDER }}\"
-            },
-            \"EmailSettings\": {
-              \"RecipientAddress\": \"${{ secrets.EMAIL_RECIPIENT }}\",
-              \"CcAddress\": \"${{ secrets.EMAIL_CC }}\",
-              \"VisitorReportRecipientAddress\": \"${{ secrets.EMAIL_VISITOR_RECIPIENT }}\",
-              \"VisitorReportCcAddress\": \"${{ secrets.EMAIL_VISITOR_CC }}\"
-            },
-            \"AzureBlob\": {
-              \"AccountName\": \"${{ secrets.AZURE_BLOB_ACCOUNT }}\",
-              \"AccountKey\": \"${{ secrets.AZURE_BLOB_KEY }}\",
-              \"ContainerName\": \"${{ secrets.AZURE_BLOB_CONTAINER }}\"
-            },
-            \"AzureBlobReview\": {
-              \"AccountName\": \"${{ secrets.AZURE_BLOB_ACCOUNT }}\",
-              \"AccountKey\": \"${{ secrets.AZURE_BLOB_KEY }}\",
-              \"ContainerName\": \"${{ secrets.AZURE_BLOB_REVIEW_CONTAINER }}\"
-            },
-            \"AzureBlobLogin\": {
-              \"AccountName\": \"${{ secrets.AZURE_BLOB_ACCOUNT }}\",
-              \"AccountKey\": \"${{ secrets.AZURE_BLOB_KEY }}\",
-              \"ContainerName\": \"${{ secrets.AZURE_BLOB_LOGIN_CONTAINER }}\"
-            }
-          }" > ./publish/appsettings.json
+          @'
+{
+  "ConnectionStrings": { "DefaultConnection": "${{ secrets.SQL_DEFAULT_CONNECTION }}" },
+  "AzureCommunicationServices": {
+    "ConnectionString": "${{ secrets.AZURE_COMM_CONNECTION }}",
+    "SenderAddress": "${{ secrets.AZURE_COMM_SENDER }}"
+  },
+  "EmailSettings": {
+    "RecipientAddress": "${{ secrets.EMAIL_RECIPIENT }}",
+    "CcAddress": "${{ secrets.EMAIL_CC }}",
+    "VisitorReportRecipientAddress": "${{ secrets.EMAIL_VISITOR_RECIPIENT }}",
+    "VisitorReportCcAddress": "${{ secrets.EMAIL_VISITOR_CC }}"
+  },
+  "AzureBlob": {
+    "AccountName": "${{ secrets.AZURE_BLOB_ACCOUNT }}",
+    "AccountKey": "${{ secrets.AZURE_BLOB_KEY }}",
+    "ContainerName": "${{ secrets.AZURE_BLOB_CONTAINER }}"
+  },
+  "AzureBlobReview": {
+    "AccountName": "${{ secrets.AZURE_BLOB_ACCOUNT }}",
+    "AccountKey": "${{ secrets.AZURE_BLOB_KEY }}",
+    "ContainerName": "${{ secrets.AZURE_BLOB_REVIEW_CONTAINER }}"
+  },
+  "AzureBlobLogin": {
+    "AccountName": "${{ secrets.AZURE_BLOB_ACCOUNT }}",
+    "AccountKey": "${{ secrets.AZURE_BLOB_KEY }}",
+    "ContainerName": "${{ secrets.AZURE_BLOB_LOGIN_CONTAINER }}"
+  }
+}
+'@ | Out-File -FilePath ./publish/appsettings.json -Encoding utf8
 
+      # Step 7: Deploy to Azure App Service
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: "my-mvc-app"         # replace with your App Service name
+          app-name: "my-mvc-app" # replace with your App Service name
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./publish
