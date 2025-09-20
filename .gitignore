@@ -13,5 +13,5 @@ obj/
 *.Publish.xml
 Properties/PublishProfiles/
 Properties/ServiceDependencies/
-"MR_Application_New/appsettings.json" 
-"appsettings.*.json"    # ignore sensitive configs
+
+
