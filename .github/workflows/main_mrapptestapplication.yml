@@ -32,41 +32,57 @@ jobs:
       - name: Publish
         run: dotnet publish -c Release -o ./publish
 
-      # Step 6: Create appsettings.json dynamically using GitHub Secrets
+      # Step 6: Create appsettings.json using a template approach
       - name: Create appsettings.json
         shell: pwsh
         run: |
-          $appSettings = @"
-{
-  "ConnectionStrings": { "DefaultConnection": "${{ secrets.SQL_DEFAULT_CONNECTION }}" },
+          # Create appsettings from a template with placeholder replacement
+          $template = @'{
+  "ConnectionStrings": { "DefaultConnection": "#SQL_DEFAULT_CONNECTION#" },
   "AzureCommunicationServices": {
-    "ConnectionString": "${{ secrets.AZURE_COMM_CONNECTION }}",
-    "SenderAddress": "${{ secrets.AZURE_COMM_SENDER }}"
+    "ConnectionString": "#AZURE_COMM_CONNECTION#",
+    "SenderAddress": "#AZURE_COMM_SENDER#"
   },
   "EmailSettings": {
-    "RecipientAddress": "${{ secrets.EMAIL_RECIPIENT }}",
-    "CcAddress": "${{ secrets.EMAIL_CC }}",
-    "VisitorReportRecipientAddress": "${{ secrets.EMAIL_VISITOR_RECIPIENT }}",
-    "VisitorReportCcAddress": "${{ secrets.EMAIL_VISITOR_CC }}"
+    "RecipientAddress": "#EMAIL_RECIPIENT#",
+    "CcAddress": "#EMAIL_CC#",
+    "VisitorReportRecipientAddress": "#EMAIL_VISITOR_RECIPIENT#",
+    "VisitorReportCcAddress": "#EMAIL_VISITOR_CC#"
   },
   "AzureBlob": {
-    "AccountName": "${{ secrets.AZURE_BLOB_ACCOUNT }}",
-    "AccountKey": "${{ secrets.AZURE_BLOB_KEY }}",
-    "ContainerName": "${{ secrets.AZURE_BLOB_CONTAINER }}"
+    "AccountName": "#AZURE_BLOB_ACCOUNT#",
+    "AccountKey": "#AZURE_BLOB_KEY#",
+    "ContainerName": "#AZURE_BLOB_CONTAINER#"
   },
   "AzureBlobReview": {
-    "AccountName": "${{ secrets.AZURE_BLOB_ACCOUNT }}",
-    "AccountKey": "${{ secrets.AZURE_BLOB_KEY }}",
-    "ContainerName": "${{ secrets.AZURE_BLOB_REVIEW_CONTAINER }}"
+    "AccountName": "#AZURE_BLOB_ACCOUNT#",
+    "AccountKey": "#AZURE_BLOB_KEY#",
+    "ContainerName": "#AZURE_BLOB_REVIEW_CONTAINER#"
   },
   "AzureBlobLogin": {
-    "AccountName": "${{ secrets.AZURE_BLOB_ACCOUNT }}",
-    "AccountKey": "${{ secrets.AZURE_BLOB_KEY }}",
-    "ContainerName": "${{ secrets.AZURE_BLOB_LOGIN_CONTAINER }}"
+    "AccountName": "#AZURE_BLOB_ACCOUNT#",
+    "AccountKey": "#AZURE_BLOB_KEY#",
+    "ContainerName": "#AZURE_BLOB_LOGIN_CONTAINER#"
   }
 }
-"@
-          $appSettings | Out-File -FilePath ./publish/appsettings.json -Encoding utf8
+'@
+          
+          # Replace placeholders with secrets (properly escaped)
+          $content = $template
+          $content = $content -replace '#SQL_DEFAULT_CONNECTION#', '${{ secrets.SQL_DEFAULT_CONNECTION }}'
+          $content = $content -replace '#AZURE_COMM_CONNECTION#', '${{ secrets.AZURE_COMM_CONNECTION }}'
+          $content = $content -replace '#AZURE_COMM_SENDER#', '${{ secrets.AZURE_COMM_SENDER }}'
+          $content = $content -replace '#EMAIL_RECIPIENT#', '${{ secrets.EMAIL_RECIPIENT }}'
+          $content = $content -replace '#EMAIL_CC#', '${{ secrets.EMAIL_CC }}'
+          $content = $content -replace '#EMAIL_VISITOR_RECIPIENT#', '${{ secrets.EMAIL_VISITOR_RECIPIENT }}'
+          $content = $content -replace '#EMAIL_VISITOR_CC#', '${{ secrets.EMAIL_VISITOR_CC }}'
+          $content = $content -replace '#AZURE_BLOB_ACCOUNT#', '${{ secrets.AZURE_BLOB_ACCOUNT }}'
+          $content = $content -replace '#AZURE_BLOB_KEY#', '${{ secrets.AZURE_BLOB_KEY }}'
+          $content = $content -replace '#AZURE_BLOB_CONTAINER#', '${{ secrets.AZURE_BLOB_CONTAINER }}'
+          $content = $content -replace '#AZURE_BLOB_REVIEW_CONTAINER#', '${{ secrets.AZURE_BLOB_REVIEW_CONTAINER }}'
+          $content = $content -replace '#AZURE_BLOB_LOGIN_CONTAINER#', '${{ secrets.AZURE_BLOB_LOGIN_CONTAINER }}'
+          
+          $content | Out-File -FilePath ./publish/appsettings.json -Encoding utf8
 
       # Step 7: Deploy to Azure Web App
       - name: Deploy to Azure WebApp
