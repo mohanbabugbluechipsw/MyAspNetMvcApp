@@ -18,7 +18,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'  # adjust if using another version
+          dotnet-version: '8.0.x'
 
       # Step 3: Restore dependencies
       - name: Restore dependencies
@@ -71,6 +71,8 @@ jobs:
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: "my-mvc-app"  # replace with your Azure App Service name
+          app-name: "my-mvc-app"  # replace with your App Service name
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./publish
+
+# check they error - This line is now properly commented out
